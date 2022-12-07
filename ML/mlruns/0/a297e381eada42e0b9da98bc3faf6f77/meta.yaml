@@ -1,0 +1,15 @@
+artifact_uri: file:///C:/Users/jimmy/BDSE_Final/ML/mlruns/0/a297e381eada42e0b9da98bc3faf6f77/artifacts
+end_time: 1670433629721
+entry_point_name: ''
+experiment_id: '0'
+lifecycle_stage: active
+run_id: a297e381eada42e0b9da98bc3faf6f77
+run_name: test_model
+run_uuid: a297e381eada42e0b9da98bc3faf6f77
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1670433203820
+status: 3
+tags: []
+user_id: jimmy
