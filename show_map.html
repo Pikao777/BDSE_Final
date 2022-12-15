@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Leaflet Map</title>
+
+    <!-- Include the leaflet CSS and JavaScript files -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""></script>
+
+    <!-- Include a custom stylesheet for the map -->
+    <style>
+        #map {
+            height: 500px;
+            width: 100%;
+        }
+    </style>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+
+    <script>
+        L_NO_TOUCH = false;
+        L_DISABLE_3D = false;
+    </script>
+
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.6.0/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css" />
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css" />
+
+    <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <style>
+        #map_9bc24bddec83ce991c86585ef301adb3 {
+            position: relative;
+            height: 500px;
+            width: 100%;
+            left: 0.0%;
+            top: 0.0%;
+        }
+    </style>
+</head>
+
+<body>
+    <button id="show-map-button">產生地圖</button>
+
+
+
+    <h1>Leaflet Map</h1>
+
+    <!-- Create a div element where the map will be displayed -->
+    <div id="map_9bc24bddec83ce991c86585ef301adb3"></div>
+
+    <script>
+        document.getElementById('show-map-button').addEventListener('click', function () {
+
+            var map_9bc24bddec83ce991c86585ef301adb3 = L.map('map_9bc24bddec83ce991c86585ef301adb3').setView([25.115294, 121.5081886], 13);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+                maxZoom: 18
+            }).addTo(map_9bc24bddec83ce991c86585ef301adb3);
+
+
+            var marker_c9ca28e180e621997a7bf6668faa83ab = L.marker(
+                [25.115294, 121.5081886],
+                {}
+            ).addTo(map_9bc24bddec83ce991c86585ef301adb3);
+
+
+            var popup_9817058165caea5a93ca4cb9695f9746 = L.popup({ "maxWidth": 2650 });
+
+
+
+            var i_frame_6f9d461ac06ea35f77851da1192cb539 = $(`<iframe src="data:text/html;charset=utf-8;base64,CiAgICAKICAgICAgICA8aDE+6buR5puc6bq15bGLPC9oMT4KICAgICAgICA8cD5Db21wYW5pZXM6PC9wPiAKICAgICAgICA8dWw+CiAgICAgICAgPGxpPum7keabnOm6teWxizwvbGk+PGxpPjM3OS4wPC9saT48bGk+NC4xPC9saT48bGk+IDExMuWPsOWMl+W4guWMl+aKleWNgOWwiuizouihlzIwNuW3tzLomZ88L2xpPgogICAgICAgIDwvdWw+CiAgICAgICAgPC9wPgogICAgICAgIDxwPkFuZCBoZXJlIHRoZSBjb21wYW55ICA8YSBocmVmPSJodHRwczovL3d3dy5nb29nbGUuY29tLnR3L21hcHMvcGxhY2UvJUU5JUJCJTkxJUU2JTlCJTlDJUU5JUJBJUI1JUU1JUIxJThCL2RhdGE9ITRtNyEzbTYhMXMweDM0NDJhZjM1OWY3MjMwYmI6MHhhZGMzOWRkNDQyMWU3ZWYhOG0yITNkMjUuMTE1Mjk0ITRkMTIxLjUwODE4ODYhMTZzJTJGZyUyRjExajB2Z3poczUhMTlzQ2hJSnV6Qnlueld2UWpRUjctY2hSTjA1M0FvP2F1dGh1c2VyPTAmaGw9emgtVFcmcmNsaz0xIiB0YXJnZXQgPSAiX2JsYW5rIj5saW5rIDwvYT48L3A+CiAgICAgICAg" width="300" style="border:none !important;" height="250"></iframe>`)[0];
+            popup_9817058165caea5a93ca4cb9695f9746.setContent(i_frame_6f9d461ac06ea35f77851da1192cb539);
+
+
+
+            marker_c9ca28e180e621997a7bf6668faa83ab.bindPopup(popup_9817058165caea5a93ca4cb9695f9746)
+                ;
+
+
+
+
+            var marker_5f0cca31f6d99b95466cea09ef39871b = L.marker(
+                [25.132952, 121.499027],
+                {}
+            ).addTo(map_9bc24bddec83ce991c86585ef301adb3);
+
+
+            var popup_acab1ea4818ee41c08eff75a3cff735e = L.popup({ "maxWidth": 2650 });
+
+
+
+            var i_frame_111e9978020c1e4a58b534adb5c0c259 = $(`<iframe src="data:text/html;charset=utf-8;base64,CiAgICAKICAgICAgICA8aDE+5qiC5bGx56qE5be35ouJ6bq1PC9oMT4KICAgICAgICA8cD5Db21wYW5pZXM6PC9wPiAKICAgICAgICA8dWw+CiAgICAgICAgPGxpPuaoguWxseeqhOW3t+aLiem6tTwvbGk+PGxpPjE2ODEuMDwvbGk+PGxpPjQuMTwvbGk+PGxpPiAxMTLlj7DljJfluILljJfmipXljYDlpKflkIzooZcyN+iZnzwvbGk+CiAgICAgICAgPC91bD4KICAgICAgICA8L3A+CiAgICAgICAgPHA+QW5kIGhlcmUgdGhlIGNvbXBhbnkgIDxhIGhyZWY9Imh0dHBzOi8vd3d3Lmdvb2dsZS5jb20udHcvbWFwcy9wbGFjZS8lRTYlQTglODIlRTUlQjElQjElRTclQUElODQlRTUlQjclQjclRTYlOEIlODklRTklQkElQjUvZGF0YT0hNG03ITNtNiExczB4MzQ0MmFlNTEzYzg0OGIzMToweGFiZjEzMzU1ZTg2OGFjOGMhOG0yITNkMjUuMTMyOTUyITRkMTIxLjQ5OTAyNyExNnMlMkZnJTJGMTFkeW13NmNycSExOXNDaElKTVl1RVBGR3VRalFSakt4bzZGVXo4YXM/YXV0aHVzZXI9MCZobD16aC1UVyZyY2xrPTEiIHRhcmdldCA9ICJfYmxhbmsiPmxpbmsgPC9hPjwvcD4KICAgICAgICA=" width="300" style="border:none !important;" height="250"></iframe>`)[0];
+            popup_acab1ea4818ee41c08eff75a3cff735e.setContent(i_frame_111e9978020c1e4a58b534adb5c0c259);
+
+
+
+            marker_5f0cca31f6d99b95466cea09ef39871b.bindPopup(popup_acab1ea4818ee41c08eff75a3cff735e);
+
+            var arrow = L.polyline([
+                [25.115294, 121.5081886],  // Start point
+                [25.132952, 121.499027]  // End point
+            ], {
+                color: 'red',
+                weight: 10,
+                opacity: 0.5
+            }).addTo(map_9bc24bddec83ce991c86585ef301adb3);
+
+            // Use the polyline decorator plugin to add an arrow head to the polyline
+            var arrowHead = L.polylineDecorator(arrow, {
+                patterns: [
+                    {
+                        offset: '100%',
+                        repeat: 0,
+                        symbol: L.Symbol.arrowHead({ pixelSize: 15, polygon: false, pathOptions: { stroke: true } })
+                    }
+                ]
+            }).addTo(map_9bc24bddec83ce991c86585ef301adb3);
+
+
+
+
+
+        });
+    </script>
+</body>
+
+</html>
