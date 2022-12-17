@@ -1339,7 +1339,18 @@ progress {
 
   .col-lg-3 {
     flex: 0 0 auto;
-    width: 25%;
+	display: flex;
+	height: 100px;
+    width: 20%;
+	align-items: center;
+  }
+
+  .col-lg-31 {
+    flex: 0 0 auto;
+
+	height: 100px;
+    width: 100%;
+	align-items: center;
   }
 
   .col-lg-4 {
@@ -3249,21 +3260,21 @@ textarea.form-control-lg {
 }
 
 .btn-outline-warning {
-  color: #ffc107;
-  border-color: #ffc107;
+  color: #8E99AE;
+  border-color: #8E99AE;
 }
 .btn-outline-warning:hover {
   color: #000;
-  background-color: #ffc107;
-  border-color: #ffc107;
+  background-color: #8E99AE;
+  border-color: #8E99AE;
 }
 .btn-check:focus + .btn-outline-warning, .btn-outline-warning:focus {
-  box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.5);
+  box-shadow: 0 0 0 0.25rem rgba(142, 153, 174, 0.5);
 }
 .btn-check:checked + .btn-outline-warning, .btn-check:active + .btn-outline-warning, .btn-outline-warning:active, .btn-outline-warning.active, .btn-outline-warning.dropdown-toggle.show {
   color: #000;
-  background-color: #ffc107;
-  border-color: #ffc107;
+  background-color: #8E99AE;
+  border-color: #8E99AE;
 }
 .btn-check:checked + .btn-outline-warning:focus, .btn-check:active + .btn-outline-warning:focus, .btn-outline-warning:active:focus, .btn-outline-warning.active:focus, .btn-outline-warning.dropdown-toggle.show:focus {
   box-shadow: 0 0 0 0.25rem rgba(255, 193, 7, 0.5);

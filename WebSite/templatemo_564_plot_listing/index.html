@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;200;300;400;500;600;700;800;900&display=swap"
     rel="stylesheet">
 
-  <title>沒有很難吧</title>
+  <title>Travel GO</title>
 
   <!-- Bootstrap core CSS -->
   <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
@@ -81,49 +81,173 @@ https://templatemo.com/tm-564-plot-listing
       <div class="row">
         <div class="col-lg-12">
           <div class="top-text header-text">
-            <h6>Over 15,500+ Popular Restaurants</h6>
-            <h2>Travel Taipei Places &amp; Restaurant</h2>
+            <h6>Over 15,500+ Popular Places and Restaurants</h6>
+            <h2>Travel Taipei Attractions &amp; Restaurant</h2>
           </div>
         </div>
         <div class="col-lg-12">
           <form id="search-form" name="gs" method="submit" role="search" action="#">
             <div class="row">
-              <div class="row"></div>
               <div class="col-lg-3 align-self-center">
-                <fieldset>
-                  <select name="area" class="form-select" aria-label="Area" id="chooseCategory"
+                <fieldset style="text-align:left;">
+                  
+                  <br>
+                  <i style="font-weight:bold;">出發日期 Date</i>
+                  <br>
+                  <br>
+                  <input type="date" name="date" class="form-select" placeholder="Enter a location"
+                    autocomplete="on" required>
+                  
+                </fieldset>
+              </div>
+              <div class="col-lg-3 align-self-center">
+                <fieldset style="text-align:left;">
+                  
+                  <br>
+                  <i style="font-weight:bold;">起始時間 Start time</i>
+                  <br>
+                  <br>
+                  <select name="start_time" class="form-select" aria-label="Area" id="chooseCategory"
                     onchange="this.form.click()">
-                    <option selected>All Areas</option>
-                    <option value="New Village">New Village</option>
-                    <option value="Old Town">Old Town</option>
-                    <option value="Modern City">Modern City</option>
+                    <option disabled style="display: none" selected value>請選擇起始時間</option>
+	 	            <option value="07:00">07:00</option>
+		            <option value="08:00">08:00</option>
+					<option value="09:00">09:00</option>
+		            <option value="10:00">10:00</option>
+					<option value="11:00">11:00</option>
+		            <option value="12:00">12:00</option>
+					<option value="13:00">13:00</option>
+		            <option value="14:00">14:00</option>
+					<option value="15:00">15:00</option>
+		            <option value="16:00">16:00</option>
+					<option value="17:00">17:00</option>
+		            <option value="18:00">18:00</option>
+					<option value="19:00">19:00</option>
+		            <option value="20:00">20:00</option>
+					<option value="21:00">21:00</option>
+		            <option value="22:00">22:00</option>
+					<option value="23:00">23:00</option>
                   </select>
                 </fieldset>
               </div>
               <div class="col-lg-3 align-self-center">
-                <fieldset>
-                  <input type="address" name="address" class="searchText" placeholder="Enter a location"
-                    autocomplete="on" required>
+                <fieldset style="text-align:left;">
+                  
+                  <br>
+                  <i style="font-weight:bold;">結束時間 End time</i>
+                  <br>
+                  <br>
+                  <select name="end_time" class="form-select" aria-label="Area" id="chooseCategory"
+                    onchange="this.form.click()">
+                    <option disabled style="display: none" selected value>請選擇結束時間</option>
+	 	            <option value="07:00">07:00</option>
+		            <option value="08:00">08:00</option>
+					<option value="09:00">09:00</option>
+		            <option value="10:00">10:00</option>
+					<option value="11:00">11:00</option>
+		            <option value="12:00">12:00</option>
+					<option value="13:00">13:00</option>
+		            <option value="14:00">14:00</option>
+					<option value="15:00">15:00</option>
+		            <option value="16:00">16:00</option>
+					<option value="17:00">17:00</option>
+		            <option value="18:00">18:00</option>
+					<option value="19:00">19:00</option>
+		            <option value="20:00">20:00</option>
+					<option value="21:00">21:00</option>
+		            <option value="22:00">22:00</option>
+					<option value="23:00">23:00</option>
+                  </select>
                 </fieldset>
               </div>
-              <div class="col-lg-3 align-self-center">
-                <fieldset>
+              <div class="col-lg-3 align-self-center" >
+                <fieldset style="text-align:left;">
+                  
+                  <br>
+                  <i style="font-weight:bold;">是否安排用餐行程</i>
+                  <br>
+                  <br>
                   <select name="price" class="form-select" aria-label="Default select example" id="chooseCategory"
                     onchange="this.form.click()">
-                    <option selected>Price Range</option>
-                    <option value="$100 - $250">$100 - $250</option>
-                    <option value="$250 - $500">$250 - $500</option>
-                    <option value="$500 - $1000">$500 - $1,000</option>
-                    <option value="$1000+">$1,000 or more</option>
+                    <option value=1>是</option>
+                    <option value=0>否</option>
                   </select>
                 </fieldset>
               </div>
-              <div class="col-lg-3 align-self-center">
-                <fieldset>
-                  <button class="main-button"><i class="fa fa-search"></i> Search Now</button>
+              <div class="col-lg-3 align-self-center" >
+                <fieldset style="text-align:left;">
+                  
+                  <br>
+                  <i style="font-weight:bold;">是否前往酒吧</i>
+                  <br>
+                  <br>
+                  <select name="price" class="form-select" aria-label="Default select example" id="chooseCategory"
+                    onchange="this.form.click()">
+                    <option value=1>是</option>
+                    <option value=0>否</option>
+                  </select>
                 </fieldset>
               </div>
             </div>
+            <div class="row" style="margin: 30px;">
+              <div class="row"><br></div>
+              <div class="col-lg-31 align-self-center" style="border-top:2px #8E99AE solid;">
+                <fieldset>
+                  <label class="fw-bolder" style="color:black; margin-top: 10px;">餐廳類型選取 Restaurant Type Selection(預設全選)</label><br>
+                  <br>
+
+                  <input type="checkbox" class="btn-check" id="btn-check-1" autocomplete="off" name="food01" value="1" checked>
+                  <label class="btn btn-outline-warning text-dark fw-bolder form-label" for="btn-check-1" title="Japanese">日式</label>
+
+                  <input type="checkbox" class="btn-check" id="btn-check-2" autocomplete="off" name="food02" value="1" checked>
+                  <label class="btn btn-outline-warning text-dark fw-bolder form-label" for="btn-check-2" title="Chinese">中式</label>
+                      
+                  <input type="checkbox" class="btn-check" id="btn-check-3" autocomplete="off" name="food03" value="1" checked>
+                  <label class="btn btn-outline-warning text-dark fw-bolder form-label" for="btn-check-3" title="American">美式</label>
+
+                  <input type="checkbox" class="btn-check" id="btn-check-4" autocomplete="off" name="food04" value="1" checked>
+                  <label class="btn btn-outline-warning text-dark fw-bolder form-label" for="btn-check-4" title="Southern">南洋</label>
+                    
+                  <input type="checkbox" class="btn-check" id="btn-check-5" autocomplete="off" name="food05" value="1" checked>
+                  <label class="btn btn-outline-warning text-dark fw-bolder form-label" for="btn-check-5" title="BBQ">燒烤店</label>
+
+                  <input type="checkbox" class="btn-check" id="btn-check-6" autocomplete="off" name="food06" value="1" checked>
+                  <label class="btn btn-outline-warning text-dark fw-bolder form-label" for="btn-check-6" title="HK">港式</label>
+
+                  <input type="checkbox" class="btn-check" id="btn-check-7" autocomplete="off" name="food07" value="1" checked>
+                  <label class="btn btn-outline-warning text-dark fw-bolder form-label" for="btn-check-7" title="Hotpot">火鍋</label>
+
+                  <input type="checkbox" class="btn-check" id="btn-check-8" autocomplete="off" name="food08" value="1" checked>
+                  <label class="btn btn-outline-warning text-dark fw-bolder form-label" for="btn-check-8" title="Brunch">韓式</label>
+
+                  <input type="checkbox" class="btn-check" id="btn-check-9" autocomplete="off" name="food09" value="1" checked>
+                  <label class="btn btn-outline-warning text-dark fw-bolder form-label" for="btn-check-9" title="Coffee">咖啡甜點</label>
+
+                  <input type="checkbox" class="btn-check" id="btn-check-10" autocomplete="off" name="food10" value="1" checked>
+                  <label class="btn btn-outline-warning text-dark fw-bolder form-label" for="btn-check-10" title="Vegi">素食</label>
+
+                  <input type="checkbox" class="btn-check" id="btn-check-11" autocomplete="off" name="food11" value="1" checked>
+                  <label class="btn btn-outline-warning text-dark fw-bolder form-label" for="btn-check-11" title="Taiwanese">台灣小吃/熱炒店</label>
+                  
+                  <input type="checkbox" class="btn-check" id="btn-check-12" autocomplete="off" name="food12" value="1" checked>
+                  <label class="btn btn-outline-warning text-dark fw-bolder form-label" for="btn-check-12" title="Italian">義式</label>
+                  
+                  <input type="checkbox" class="btn-check" id="btn-check-13" autocomplete="off" name="food13" value="1" checked>
+                  <label class="btn btn-outline-warning text-dark fw-bolder form-label" for="btn-check-13" title="Exotic">異國料理</label>
+
+                </fieldset>
+              </div>
+            
+            </div>
+            <div class="row"><br></div>
+            <div class="row">
+              <div class="align-self-center">
+                <fieldset>
+                  <button class="main-button"  style="font-weight:bold;"><i class="fa fa-search"></i>Travel GO</button>
+                </fieldset>
+              </div>
+            </div>
+            
           </form>
         </div>
         <div class="col-lg-10 offset-lg-1">
@@ -143,9 +267,63 @@ https://templatemo.com/tm-564-plot-listing
       </div>
     </div>
   </div>
-
-
-
+  <footer>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-4">
+          <div class="about">
+            <div class="logo">
+              <img src="assets/images/black-logo.png" alt="Plot Listing">
+            </div>
+            <p>Thank you for visiting our website! We are grateful for your support and appreciate the opportunity to serve you.</p>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="helpful-links">
+            <h4>Helpful Links</h4>
+            <div class="row">
+              <div class="col-lg-6 col-sm-6">
+                <ul>
+                  <li><a href="#">GitHub</a></li>
+                  <li><a href="#">Reviews</a></li>
+                  <li><a href="#">Listing</a></li>
+                  <li><a href="#">Contact Us</a></li>
+                </ul>
+              </div>
+              <div class="col-lg-6">
+                <ul>
+                  <li><a href="#">About Us</a></li>
+                  <li><a href="#">Awards</a></li>
+                  <li><a href="#">Useful Sites</a></li>
+                  <li><a href="#">Privacy Policy</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="contact-us">
+            <h4>Contact Us</h4>
+            <p>27th Street of New Town, Digital Villa</p>
+            <div class="row">
+              <div class="col-lg-6">
+                <a href="#">010-020-0340</a>
+              </div>
+              <div class="col-lg-6">
+                <a href="#">090-080-0760</a>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-12">
+          <div class="sub-footer">
+            <p>Copyright © 2022 BDSE28 Group 5. All Rights Reserved.
+            <br>
+			Design: Pikao</p>
+          </div>
+        </div>
+      </div>
+    </div>
   </footer>
 
 
