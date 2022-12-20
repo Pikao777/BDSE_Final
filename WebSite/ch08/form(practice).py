@@ -54,7 +54,7 @@ def map():
             <p>Infomation:</p> 
             <ul>
             <li>總評論數: <span style="color: red; font-weight:bold;">{int(df.loc[i,'total_reviews'])}</span> 筆</li>
-            <li>平均星數: <span style="color: red; font-weight:bold;">{int(df.loc[i,'total_rating'])}</span></li>
+            <li>平均星數: <span style="color: red; font-weight:bold;">{df.loc[i,'total_rating']}</span></li>
             <li>地址: {df.loc[i,'address']}</li>
             </ul>
             </p>
