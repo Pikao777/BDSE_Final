@@ -27,10 +27,22 @@ def arange():
 # practice start
 
 
-@app.route('/map', methods=['GET'])
+@app.route('/map', methods=['POST'])
 def map():
-    df = pd.read_csv('cool.csv')
-    df = df[0:10]
+
+    items = ["1", "2", "3", "4", "5"]
+    # Weights for each item
+    weights = [0.3, 0.2, 0.2, 0.2, 0.1]
+    # Select a random item from the list, with the weights specified
+    selected_item = random.choices(items, weights=weights)[0]
+
+    df = pd.read_csv('./cool2.csv')
+    df = df[df['district_block'] == int(selected_item)]
+    df = df.sample(n=7)
+    df = df.reset_index()
+
+    # df = pd.read_csv('cool.csv')
+    # df = df[0:10]
 
     m = folium.Map(tiles="OpenStreetMap", location=[
                    df['latitude'].mean(), df['longitude'].mean()], zoom_start=13)
@@ -107,4 +119,4 @@ def form_result():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0', port=9000)
