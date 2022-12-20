@@ -1,35 +1,21 @@
-<form>
-  <select id="selection1" onchange="updateSelection2()">
-    <option value="1">1</option>
-    <option value="2">2</option>
-    <option value="3">3</option>
-    <option value="4">4</option>
-    <option value="5">5</option>
-    <option value="6">6</option>
-    <option value="7">7</option>
-    <option value="8">8</option>
-    <option value="9">9</option>
-    <option value="10">10</option>
-  </select>
-  <select id="selection2">
-    <!-- options will be added here by the updateSelection2() function -->
-  </select>
-</form>
+<style>
+  .container {
+    height: 200px;
+    width: 200px;
+    background-color: red;
+    transition: height 1s ease-out;
+  }
+</style>
+
+<div class="container">
+  <!-- Content goes here -->
+</div>
+
+<button onclick="disappear()">Disappear</button>
 
 <script>
-  function updateSelection2() {
-    var selection1 = document.getElementById("selection1");
-    var selection2 = document.getElementById("selection2");
-
-    // clear current options
-    selection2.innerHTML = "";
-
-    // add new options
-    for (var i = Number(selection1.value) + 1; i <= 23; i++) {
-      var option = document.createElement("option");
-      option.value = i;
-      option.text = i;
-      selection2.add(option);
-    }
+  function disappear() {
+    var container = document.querySelector(".container");
+    container.style.height = "0";
   }
 </script>
