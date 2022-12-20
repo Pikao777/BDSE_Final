@@ -1,99 +1,35 @@
-
-<style>
-      /* CSS for styling the date picker */
-     
-p {
-        margin: 30px;
-	color: black;
-      }
-h1 {
-        margin: 30px;
-      }
-      select {
-        width: 150px;
-        height: 30px;
-        font-size: 16px;
-        background-color: #f5f5f5;
-        border: 1px solid #ccc;
-        padding: 2px;
-        margin: 2px;
-      }
-div.d1 {
-        display: inline-block;
-        width: 300px;
-        padding: 10px;
-        margin: 10px;
-      }
-</style>
-<form action="/submit-form.php">
-<div class="d1">
-<p>
-	</p><h1>行程安排</h1>
-    <p><label> Please select a date:</label><br><input name="start-day" type="date" data-block-type=""></p>
-<p>
-<label> Please select a start time:</label> <br> 
-    <select name="start-time">
-      <option>8:00</option>
-      <option>9:00</option>
-      <option>10:00</option>
-      <option>11:00</option>
-      <option>12:00</option>
-      <option>13:00</option>
-      <option>14:00</option>
-      <option>15:00</option>
-      <option>16:00</option>
-      <option>17:00</option>
-      <option>18:00</option>
-      <option>19:00</option>
-      <option>20:00</option>
-      <option>21:00</option>
-    </select>
-	</p>
-<p>
-<label> Please select a end time:</label> <br>  
-    <select name="end-time">
-      <option>8:00</option>
-      <option>9:00</option>
-      <option>10:00</option>
-      <option>11:00</option>
-      <option>12:00</option>
-      <option>13:00</option>
-      <option>14:00</option>
-      <option>15:00</option>
-      <option>16:00</option>
-      <option>17:00</option>
-      <option>18:00</option>
-      <option>19:00</option>
-      <option>20:00</option>
-      <option>21:00</option>
-    </select>
-	</p>
-</div>
-
-
-
-
-<div id="checkbox" class="d1">
-	<label><input type="checkbox" name="variety" value="台灣小吃/熱炒店"><span class="round button">台灣小吃/熱炒店</span></label>
-	<label><input type="checkbox" name="variety" value="日式"><span class="round button">日式</span></label>
-	<label><input type="checkbox" name="variety" value="韓式"><span class="round button">韓式</span></label>
-	<label><input type="checkbox" name="variety" value="意式"><span class="round button">意式</span></label>
-	<label><input type="checkbox" name="variety" value="異國料理"><span class="round button">異國料理</span></label>
-	<label><input type="checkbox" name="variety" value="酒吧/餐酒館"><span class="round button">酒吧/餐酒館</span></label>
-	<label><input type="checkbox" name="variety" value="咖啡甜點"><span class="round button">咖啡甜點</span></label>
-	<label><input type="checkbox" name="variety" value="火鍋"><span class="round button">火鍋</span></label>
-	<label><input type="checkbox" name="variety" value="早午餐"><span class="round button">早午餐</span></label>
-	<label><input type="checkbox" name="variety" value="燒烤店"><span class="round button">燒烤店</span></label>
-	<label><input type="checkbox" name="variety" value="中式"><span class="round button">中式</span></label>
-	<label><input type="checkbox" name="variety" value="南洋"><span class="round button">南洋</span></label>
-</div>
-<style>
-#checkbox input[type="checkbox"] {display: none; }
-#checkbox input:checked + .button {background: #5e7380; color: #fff;}
-#checkbox .button {display: inline-block; margin: 0 5px 10px 0; padding: 5px 10px; background: #f7f7f7; color: #333; cursor: pointer; }
-#checkbox .button:hover {background: #bbb; color: #fff; }
-#checkbox .round {border-radius: 5px; }
-</style>
-
-  <input type="submit" value="Submit">
+<form>
+  <select id="selection1" onchange="updateSelection2()">
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="3">3</option>
+    <option value="4">4</option>
+    <option value="5">5</option>
+    <option value="6">6</option>
+    <option value="7">7</option>
+    <option value="8">8</option>
+    <option value="9">9</option>
+    <option value="10">10</option>
+  </select>
+  <select id="selection2">
+    <!-- options will be added here by the updateSelection2() function -->
+  </select>
 </form>
+
+<script>
+  function updateSelection2() {
+    var selection1 = document.getElementById("selection1");
+    var selection2 = document.getElementById("selection2");
+
+    // clear current options
+    selection2.innerHTML = "";
+
+    // add new options
+    for (var i = Number(selection1.value) + 1; i <= 23; i++) {
+      var option = document.createElement("option");
+      option.value = i;
+      option.text = i;
+      selection2.add(option);
+    }
+  }
+</script>

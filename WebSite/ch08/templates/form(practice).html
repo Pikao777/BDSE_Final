@@ -1,0 +1,139 @@
+{% extends "parts/base.html" %}
+
+{% block title %}form{% endblock title %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='jquery/jquery-3.5.1.min.js') }}"></script>
+{{ moment.include_moment() }}
+{{ moment.locale('zh-tw') }}
+{% endblock scripts %}
+
+{% block page_content %}
+{{ super() }}
+<!-- practice start -->
+<form method="POST" action="/form_result">
+    <div class="d1">
+        <p></p>
+        <p>Please select a date:<br>
+            <input type="date" class="form-select" name="date" aria-label="Default select example">
+        </p>
+        <p> Please select a start time:<br>
+            <select class="form-select" name="start time" aria-label="Default select example">
+                <option>8:00</option>
+                <option>9:00</option>
+                <option>10:00</option>
+                <option>11:00</option>
+                <option>12:00</option>
+                <option>13:00</option>
+                <option>14:00</option>
+                <option>15:00</option>
+                <option>16:00</option>
+                <option>17:00</option>
+                <option>18:00</option>
+                <option>19:00</option>
+                <option>20:00</option>
+                <option>21:00</option>
+            </select>
+        </p>
+        <p> Please select a end time:<br>
+            <select class="form-select" name="end time" aria-label="Default select example">
+                <option>8:00</option>
+                <option>9:00</option>
+                <option>10:00</option>
+                <option>11:00</option>
+                <option>12:00</option>
+                <option>13:00</option>
+                <option>14:00</option>
+                <option>15:00</option>
+                <option>16:00</option>
+                <option>17:00</option>
+                <option>18:00</option>
+                <option>19:00</option>
+                <option>20:00</option>
+                <option>21:00</option>
+            </select>
+        </p>
+    </div>
+    <div id="checkbox" class="d1">
+        <label>
+            <input type="checkbox" name="variety" value="台灣小吃/熱炒店">
+            <span class="button round">台灣小吃/熱炒店</span>
+        </label>
+        <label>
+            <input type="checkbox" name="variety" value="日式">
+            <span class="button round">日式</span>
+        </label>
+        <label>
+            <input type="checkbox" name="variety" value="韓式">
+            <span class="button round">韓式</span>
+        </label>
+        <label>
+            <input type="checkbox" name="variety" value="意式">
+            <span class="button round">意式</span>
+        </label>
+        <label>
+            <input type="checkbox" name="variety" value="異國料理">
+            <span class="button round">異國料理</span>
+        </label>
+        <label>
+            <input type="checkbox" name="variety" value="酒吧/餐酒館">
+            <span class="button round">酒吧/餐酒館</span>
+        </label>
+        <label>
+            <input type="checkbox" name="variety" value="咖啡甜點">
+            <span class="button round">咖啡甜點</span>
+        </label>
+        <label>
+            <input type="checkbox" name="variety" value="火鍋">
+            <span class="button round">火鍋</span>
+        </label>
+        <label>
+            <input type="checkbox" name="variety" value="早午餐">
+            <span class="button round">早午餐</span>
+        </label>
+        <label>
+            <input type="checkbox" name="variety" value="燒烤店">
+            <span class="button round">燒烤店</span>
+        </label>
+        <label>
+            <input type="checkbox" name="variety" value="中式">
+            <span class="button round">中式</span>
+        </label>
+        <label>
+            <input type="checkbox" name="variety" value="南洋">
+            <span class="button round">南洋</span>
+        </label>
+    </div>
+    <style>
+        #checkbox input[type="checkbox"] {
+            display: none;
+        }
+
+        #checkbox input:checked+.button {
+            background: #5e7380;
+            color: #fff;
+        }
+
+        #checkbox .button {
+            display: inline-block;
+            margin: 0 5px 10px 0;
+            padding: 5px 10px;
+            background: #f7f7f7;
+            color: #333;
+            cursor: pointer;
+        }
+
+        #checkbox .button:hover {
+            background: #bbb;
+            color: #fff;
+        }
+
+        #checkbox .round {
+            border-radius: 5px;
+        }
+    </style>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</form>
+<!-- practice end -->
+{% endblock page_content %}
