@@ -6,7 +6,7 @@ import random
 import folium
 from folium import plugins
 import json
-
+from folium import CustomIcon
 
 app = Flask(__name__)
 moment = Moment(app)
@@ -60,11 +60,14 @@ def map():
             </p>
             <p>Google Maps <a href="{df.iloc[i]['google_url']}" target = "_blank">link </a></p>
             """
-
+        points = list(zip(df['latitude'], df['longitude']))
         iframe = folium.IFrame(html=html, width=300, height=250)
         popup = folium.Popup(iframe, max_width=2650)
+        icon = CustomIcon('icon.png', icon_size=(
+            40, 40), icon_anchor=(20, 40))
         folium.Marker(
-            location=[df.iloc[i]['latitude'], df.iloc[i]['longitude']],
+            location=[df.iloc[i]['latitude'],
+                      df.iloc[i]['longitude']], icon=icon,
             popup=popup,
             #         icon=folium.DivIcon(html=f"""
             #             <div><svg>
@@ -72,7 +75,8 @@ def map():
             #                 <rect x="3", y="3" width="3" height="3", fill="red", opacity=".7"
             #             </svg></div>""")
         ).add_to(m)
-
+        folium.PolyLine(points, color='red', weight=2.5, opacity=1,
+                        dash_array='4, 8', popup='Line').add_to(m)
     with open("台北界線.json", encoding='utf-8') as file:
         data = json.load(file)
 
