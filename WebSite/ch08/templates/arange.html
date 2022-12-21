@@ -62,7 +62,7 @@
                 <fieldset style="text-align:left;">
 
                   <br>
-                  <i style="font-weight:bold;">出發日期 Date</i>
+                  <label style="font-weight:bold;">出發日期 Date</label>
                   <br>
                   <br>
                   <input type="date" name="date" class="form-select" placeholder="Enter a location" autocomplete="on"
@@ -151,7 +151,7 @@
                 <fieldset style="text-align:left;" id="bar_div">
 
                   <br>
-                  <i style="font-weight:bold;">是否前往酒吧</i>
+                  <label style="font-weight:bold;">是否前往酒吧</label>
                   <br>
                   <br>
                   <select name="bar" class="form-select" aria-label="Default select example" id="chooseCategory"
@@ -349,19 +349,25 @@
 
     function toggleVisibility2() {
       var select = document.getElementById("eat");
-      const targets = document.getElementsByClassName('target');
+      const targets = document.getElementsByClassName('col-lg-3');
       var description = document.getElementById("bar_div");
       if (select.value === "1") {
         description.style.display = "block";
-        for (let i = 0; i < targets.length; i++) {
-          targets[i].style.width = '20%';
-        }
+        // for (let i = 0; i < targets.length; i++) {
+        //   targets[i].style.flex = '0 0 auto';
+        //   targets[i].style.display = 'flex';
+        //   targets[i].style.height = '100px';
+        //   targets[i].style.width = '20%';
+        // }
 
       } else {
         description.style.display = "none";
-        for (let i = 0; i < targets.length; i++) {
-          targets[i].style.width = '25%';
-        }
+        // for (let i = 0; i < targets.length; i++) {
+        //   targets[i].style.flex = '0 0 auto';
+        //   targets[i].style.display = 'flex';
+        //   targets[i].style.height = '100px';
+        //   targets[i].style.width = '25%';
+        // }
       }
     }
   </script>
