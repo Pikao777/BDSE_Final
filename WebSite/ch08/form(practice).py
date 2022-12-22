@@ -63,8 +63,13 @@ def map():
         points = list(zip(df['latitude'], df['longitude']))
         iframe = folium.IFrame(html=html, width=300, height=250)
         popup = folium.Popup(iframe, max_width=2650)
-        icon = CustomIcon('icon.png', icon_size=(
-            40, 40), icon_anchor=(20, 40))
+        if i == 0:
+            icon = CustomIcon('icon2.png', icon_size=(
+                40, 40), icon_anchor=(20, 40))
+        else:
+            icon = CustomIcon('icon.png', icon_size=(
+                40, 40), icon_anchor=(20, 40))
+
         folium.Marker(
             location=[df.iloc[i]['latitude'],
                       df.iloc[i]['longitude']], icon=icon,
@@ -83,7 +88,7 @@ def map():
     m.add_child(folium.GeoJson(data=data))
 
     m.save('./templates/parts/test_map4.html')
-    return render_template('map.html')
+    return render_template('map.html', df=df)
 
 
 @app.route('/final_map')

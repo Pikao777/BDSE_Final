@@ -40,7 +40,9 @@
       </div>
     </div>
   </div>
-
+  {% for i in range(0, 7) %}
+  {{ loop.index }}: {{ df.loc[i, 'place_name'] }}
+  {% endfor %}
   <div class="contact-page">
     <div class="container">
       <div class="row">
