@@ -33,9 +33,9 @@ def map():
     df_r = pd.read_csv('place_info_final_1217.csv')
 
     df_a_nightview = df_a[df_a['new_place_category'] == '夜景']
-    df_a_nightmarket = df_a[df_a['new_place_category'] == '夜市']
     df_a2 = df_a.drop(df_a_nightview.index)
-    df_a2 = df_a.drop(df_a_nightmarket.index)
+    # df_a_nightmarket = df_a[df_a['new_place_category'] == '夜市']
+    # df_a2 = df_a.drop(df_a_nightmarket.index)
 
     district = ["1", "2", "3", "4", "5"]
     # Weights for each item
@@ -46,7 +46,7 @@ def map():
     # 建立空的 DataFrame 存放最終行程順序
     df = pd.DataFrame()
 
-    # 選取被挑選出的欄位
+    # 篩選被挑選出的行政區的所有景點
     df_a2 = df_a2[df_a2['district_num'] == int(selected_district)]
 
     # 將rating大於4.3的*2, 小於3.7的/2 存到 rating2
@@ -56,7 +56,6 @@ def map():
 
     # 隨機取樣一行
     attraction_1 = df_a2.sample(n=1, weights=df_a2['weights'])
-    # result = pd.concat([result, attraction_1])
 
     # 從原始df_a2中移除attraction_1的行
     df_a2 = df_a2.drop(attraction_1.index)
@@ -70,6 +69,33 @@ def map():
     d_longitude = (attraction_1['longitude'].values -
                    attraction_2['longitude'].values)[0]
 
+    def place_filter(data, filter1, filter2, filter3):
+        df_in_func = data[filter1]
+        if df_in_func.shape[0] != 0:
+            df_in_func['rating2'] = df_in_func['total_rating'].apply(
+                lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+            df_in_func['weights'] = df_in_func['rating2'] / \
+                df_in_func['rating2'].sum()
+            data_result = df_in_func.sample(n=1, weights=df_in_func['weights'])
+        else:
+            df_in_func = data[filter2]
+            if df_in_func.shape[0] != 0:
+                df_in_func['rating2'] = df_in_func['total_rating'].apply(
+                    lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+                df_in_func['weights'] = df_in_func['rating2'] / \
+                    df_in_func['rating2'].sum()
+                data_result = df_in_func.sample(
+                    n=1, weights=df_in_func['weights'])
+            else:
+                df_in_func = data[filter3]
+                df_in_func['rating2'] = df_in_func['total_rating'].apply(
+                    lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+                df_in_func['weights'] = df_in_func['rating2'] / \
+                    df_in_func['rating2'].sum()
+                data_result = df_in_func.sample(
+                    n=1, weights=df_in_func['weights'])
+        return data_result
+
     if abs(d_latitude) > abs(d_longitude):
         # 緯度差距大於精度差距，以緯度分割
         if d_latitude > 0:
@@ -78,19 +104,11 @@ def map():
             # 早餐店要篩選latitude > attraction_1的latitude
             filt_r_1 = (df_r['new_place_category'] == '早午餐') & (
                 df_r['latitude'] > attraction_1['latitude'].values[0]) & (df_r['district_num'] == int(selected_district))
-            df_r_1 = df_r[filt_r_1]
-            if df_r_1.shape[0] != 0:
-                df_r_1['rating2'] = df_r_1['total_rating'].apply(
-                    lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                df_r_1['weights'] = df_r_1['rating2'] / df_r_1['rating2'].sum()
-                restaurant_1 = df_r_1.sample(n=1, weights=df_r_1['weights'])
-            else:
-                filt_r_1 = df_r['district_num'] == int(selected_district)
-                df_r_1 = df_r[filt_r_1]
-                df_r_1['rating2'] = df_r_1['total_rating'].apply(
-                    lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                df_r_1['weights'] = df_r_1['rating2'] / df_r_1['rating2'].sum()
-                restaurant_1 = df_r_1.sample(n=1, weights=df_r_1['weights'])
+            filt_r_1_2 = (df_r['new_place_category'] == '早午餐') & (
+                df_r['latitude'] < attraction_1['latitude'].values[0]) & (df_r['district_num'] == int(selected_district)) & (df_r['latitude'] > attraction_2['latitude'].values[0])
+            filt_r_1_3 = (df_r['new_place_category'] == '早午餐') & (
+                df_r['district_num'] == int(selected_district))
+            restaurant_1 = place_filter(df_r, filt_r_1, filt_r_1_2, filt_r_1_3)
 
             # category_list 接收回傳值
             category_list = request.form.getlist('food')
@@ -99,94 +117,143 @@ def map():
                 category_list_new.remove('咖啡甜點')
             else:
                 category_list_new = category_list.copy()
-            category_all = ['中式', '韓式', '台灣小吃/熱炒店', '異國料理',
-                            '港式', '意式', '燒烤店', '南洋', '美式', '火鍋', '素食']
 
             # 午餐要選在attraction_1['latitude'] attraction_2['latitude']中間，且符合使用者選擇的類別
-            filt_r_2 = df_r[df_r['new_place_category'].isin(category_list_new)]
-            filt_r_2 = filt_r_2[attraction_1['latitude'].values[0]
-                                > filt_r_2['latitude']]
-            filt_r_2 = filt_r_2[attraction_2['latitude'].values[0]
-                                < filt_r_2['latitude']]
-            df_r_2 = filt_r_2[filt_r_2['district_num']
-                              == int(selected_district)]
-            df_r_2.shape[0]
-
-            if df_r_2.shape[0] != 0:
-                # 如果有在中間
-                df_r_2['rating2'] = df_r_2['total_rating'].apply(
-                    lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                df_r_2['weights'] = df_r_2['rating2'] / df_r_1['rating2'].sum()
-                restaurant_2 = df_r_2.sample(n=1, weights=df_r_2['weights'])
-            else:
-                # 如果不符合上述任一條件，就在該區隨機挑選一間餐廳
-                filt_r_2 = df_r[df_r['new_place_category'].isin(
-                    category_list_new)]
-                df_r_2 = filt_r_2[filt_r_2['district_num']
-                                  == int(selected_district)]
-                df_r_2['rating2'] = df_r_2['total_rating'].apply(
-                    lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                df_r_2['weights'] = df_r_2['rating2'] / df_r_1['rating2'].sum()
-                restaurant_2 = df_r_2.sample(n=1, weights=df_r_2['weights'])
+            filt_r_2 = (df_r['new_place_category'].isin(category_list_new)) & (attraction_1['latitude'].values[0]
+                                                                               > df_r['latitude']) & (attraction_2['latitude'].values[0] < df_r['latitude']) & (df_r['district_num'] == int(selected_district))
+            filt_r_2_2 = (df_r['new_place_category'].isin(category_list_new)) & (df_r['district_num'] == int(
+                selected_district)) & (attraction_2['latitude'].values[0] < df_r['latitude'])
+            filt_r_2_3 = (df_r['new_place_category'].isin(category_list_new)) & (df_r['district_num'] == int(
+                selected_district)) & (attraction_2['latitude'].values[0] > df_r['latitude'])
+            restaurant_2 = place_filter(df_r, filt_r_2, filt_r_2_2, filt_r_2_3)
 
             # 景點3要篩選latitude < attraction_2的latitude
             if '咖啡甜點' in category_list:
-
                 filt_r_3 = (df_r['latitude'] < attraction_2['latitude'].values[0]) & (
                     df_r['district_num'] == int(selected_district)) & (df_r['new_place_category'] == '咖啡甜點')
-                df_r_3 = df_r[filt_r_3]
-                if df_r_3.shape[0] != 0:
-                    df_r_3['rating2'] = df_r_3['total_rating'].apply(
-                        lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                    df_r_3['weights'] = df_r_3['rating2'] / \
-                        df_r_3['rating2'].sum()
-                    restaurant_attraction_3 = df_r_3.sample(
-                        n=1, weights=df_r_3['weights'])
-                else:
-                    filt_a_3 = (df_a2['latitude'] < attraction_2['latitude'].values[0]) & (
-                        df_a2['district_num'] == int(selected_district))
-                    df_a_3 = df_a2[filt_a_3]
-                    if df_a_3.shape[0] != 0:
-                        df_a_3['rating2'] = df_a_3['total_rating'].apply(
-                            lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                        df_a_3['weights'] = df_a_3['rating2'] / \
-                            df_a_3['rating2'].sum()
-                        restaurant_attraction_3 = df_a_3.sample(
-                            n=1, weights=df_a_3['weights'])
-                    else:
-                        # 如果不符合上述任一條件，就在該區隨機挑選一個景點
-                        filt_a_3 = df_a2['district_num'] == int(
-                            selected_district)
-                        df_a_3 = df_a2[filt_a_3]
-                        df_a_3['rating2'] = df_a_3['total_rating'].apply(
-                            lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                        df_a_3['weights'] = df_a_3['rating2'] / \
-                            df_a_3['rating2'].sum()
-                        restaurant_attraction_3 = df_a_3.sample(
-                            n=1, weights=df_a_3['weights'])
-
+                filt_r_3_2 = (df_r['latitude'] > attraction_2['latitude'].values[0]) & (df_r['district_num'] == int(
+                    selected_district)) & (df_r['new_place_category'] == '咖啡甜點') & (df_r['latitude'] < attraction_1['latitude'].values[0])
+                filt_r_3_3 = (df_r['district_num'] == int(selected_district)) & (
+                    df_r['new_place_category'] == '咖啡甜點')
+                restaurant_attraction_3 = place_filter(
+                    df_r, filt_r_3, filt_r_3_2, filt_r_3_3)
             else:
                 filt_a_3 = (df_a2['latitude'] < attraction_2['latitude'].values[0]) & (
                     df_a2['district_num'] == int(selected_district))
-                df_a_3 = df_a2[filt_a_3]
+                filt_a_3_2 = (df_a2['latitude'] > attraction_2['latitude'].values[0]) & (df_a2['district_num'] == int(
+                    selected_district)) & (df_a2['latitude'] < attraction_1['latitude'].values[0])
+                filt_a_3_3 = (df_a2['district_num'] == int(selected_district))
+                restaurant_attraction_3 = place_filter(
+                    df_a2, filt_a_3, filt_a_3_2, filt_a_3_3)
 
-                if df_a_3.shape[0] != 0:
-                    df_a_3['rating2'] = df_a_3['total_rating'].apply(
-                        lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                    df_a_3['weights'] = df_a_3['rating2'] / \
-                        df_a_3['rating2'].sum()
-                    restaurant_attraction_3 = df_a_3.sample(
-                        n=1, weights=df_a_3['weights'])
-                else:
-                    # 如果不符合上述任一條件，就在該區隨機挑選一個景點
-                    filt_a_3 = df_a2['district_num'] == int(selected_district)
-                    df_a_3 = df_a2[filt_a_3]
-                    df_a_3['rating2'] = df_a_3['total_rating'].apply(
-                        lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                    df_a_3['weights'] = df_a_3['rating2'] / \
-                        df_a_3['rating2'].sum()
-                    restaurant_attraction_3 = df_a_3.sample(
-                        n=1, weights=df_a_3['weights'])
+            # df_r_1 = df_r[filt_r_1]
+            # if df_r_1.shape[0] != 0:
+            #     df_r_1['rating2'] = df_r_1['total_rating'].apply(
+            #         lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+            #     df_r_1['weights'] = df_r_1['rating2'] / df_r_1['rating2'].sum()
+            #     restaurant_1 = df_r_1.sample(n=1, weights=df_r_1['weights'])
+            # else:
+            #     filt_r_1 = df_r['district_num'] == int(selected_district)
+            #     df_r_1 = df_r[filt_r_1]
+            #     df_r_1['rating2'] = df_r_1['total_rating'].apply(
+            #         lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+            #     df_r_1['weights'] = df_r_1['rating2'] / df_r_1['rating2'].sum()
+            #     restaurant_1 = df_r_1.sample(n=1, weights=df_r_1['weights'])
+
+            # category_list 接收回傳值
+            # category_list = request.form.getlist('food')
+            # if '咖啡甜點' in category_list:
+            #     category_list_new = category_list.copy()
+            #     category_list_new.remove('咖啡甜點')
+            # else:
+            #     category_list_new = category_list.copy()
+
+            # 午餐要選在attraction_1['latitude'] attraction_2['latitude']中間，且符合使用者選擇的類別
+
+            # filt_r_2 = df_r[df_r['new_place_category'].isin(category_list_new)]
+            # filt_r_2 = filt_r_2[attraction_1['latitude'].values[0]
+            #                     > filt_r_2['latitude']]
+            # filt_r_2 = filt_r_2[attraction_2['latitude'].values[0]
+            #                     < filt_r_2['latitude']]
+            # df_r_2 = filt_r_2[filt_r_2['district_num']
+            #                   == int(selected_district)]
+
+            # if df_r_2.shape[0] != 0:
+            #     # 如果有在中間
+            #     df_r_2['rating2'] = df_r_2['total_rating'].apply(
+            #         lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+            #     df_r_2['weights'] = df_r_2['rating2'] / df_r_2['rating2'].sum()
+            #     restaurant_2 = df_r_2.sample(n=1, weights=df_r_2['weights'])
+            # else:
+            #     # 如果不符合上述任一條件，就在該區隨機挑選一間餐廳
+            #     filt_r_2 = df_r[df_r['new_place_category'].isin(
+            #         category_list_new)]
+            #     df_r_2 = filt_r_2[filt_r_2['district_num']
+            #                       == int(selected_district)]
+            #     df_r_2['rating2'] = df_r_2['total_rating'].apply(
+            #         lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+            #     df_r_2['weights'] = df_r_2['rating2'] / df_r_1['rating2'].sum()
+            #     restaurant_2 = df_r_2.sample(n=1, weights=df_r_2['weights'])
+
+            # 景點3要篩選latitude < attraction_2的latitude
+
+            # if '咖啡甜點' in category_list:
+
+            #     filt_r_3 = (df_r['latitude'] < attraction_2['latitude'].values[0]) & (
+            #         df_r['district_num'] == int(selected_district)) & (df_r['new_place_category'] == '咖啡甜點')
+            #     df_r_3 = df_r[filt_r_3]
+            #     if df_r_3.shape[0] != 0:
+            #         df_r_3['rating2'] = df_r_3['total_rating'].apply(
+            #             lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+            #         df_r_3['weights'] = df_r_3['rating2'] / \
+            #             df_r_3['rating2'].sum()
+            #         restaurant_attraction_3 = df_r_3.sample(
+            #             n=1, weights=df_r_3['weights'])
+            #     else:
+            #         filt_a_3 = (df_a2['latitude'] < attraction_2['latitude'].values[0]) & (
+            #             df_a2['district_num'] == int(selected_district))
+            #         df_a_3 = df_a2[filt_a_3]
+            #         if df_a_3.shape[0] != 0:
+            #             df_a_3['rating2'] = df_a_3['total_rating'].apply(
+            #                 lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+            #             df_a_3['weights'] = df_a_3['rating2'] / \
+            #                 df_a_3['rating2'].sum()
+            #             restaurant_attraction_3 = df_a_3.sample(
+            #                 n=1, weights=df_a_3['weights'])
+            #         else:
+            #             # 如果不符合上述任一條件，就在該區隨機挑選一個景點
+            #             filt_a_3 = df_a2['district_num'] == int(
+            #                 selected_district)
+            #             df_a_3 = df_a2[filt_a_3]
+            #             df_a_3['rating2'] = df_a_3['total_rating'].apply(
+            #                 lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+            #             df_a_3['weights'] = df_a_3['rating2'] / \
+            #                 df_a_3['rating2'].sum()
+            #             restaurant_attraction_3 = df_a_3.sample(
+            #                 n=1, weights=df_a_3['weights'])
+
+            # else:
+            #     filt_a_3 = (df_a2['latitude'] < attraction_2['latitude'].values[0]) & (
+            #         df_a2['district_num'] == int(selected_district))
+            #     df_a_3 = df_a2[filt_a_3]
+
+            #     if df_a_3.shape[0] != 0:
+            #         df_a_3['rating2'] = df_a_3['total_rating'].apply(
+            #             lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+            #         df_a_3['weights'] = df_a_3['rating2'] / \
+            #             df_a_3['rating2'].sum()
+            #         restaurant_attraction_3 = df_a_3.sample(
+            #             n=1, weights=df_a_3['weights'])
+            #     else:
+            #         # 如果不符合上述任一條件，就在該區隨機挑選一個景點
+            #         filt_a_3 = df_a2['district_num'] == int(selected_district)
+            #         df_a_3 = df_a2[filt_a_3]
+            #         df_a_3['rating2'] = df_a_3['total_rating'].apply(
+            #             lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+            #         df_a_3['weights'] = df_a_3['rating2'] / \
+            #             df_a_3['rating2'].sum()
+            #         restaurant_attraction_3 = df_a_3.sample(
+            #             n=1, weights=df_a_3['weights'])
 
     #         filt_a_3 = (df_a2['latitude'] < attraction_2['latitude'].values[0]) & (df_a2['district_num'] == int(selected_district))
     #         df_a_3 = df_a2[filt_a_3]
@@ -208,19 +275,11 @@ def map():
             # 早餐店要篩選latitude < attraction_1的latitude
             filt_r_1 = (df_r['new_place_category'] == '早午餐') & (
                 df_r['latitude'] < attraction_1['latitude'].values[0]) & (df_r['district_num'] == int(selected_district))
-            df_r_1 = df_r[filt_r_1]
-            if df_r_1.shape[0] != 0:
-                df_r_1['rating2'] = df_r_1['total_rating'].apply(
-                    lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                df_r_1['weights'] = df_r_1['rating2'] / df_r_1['rating2'].sum()
-                restaurant_1 = df_r_1.sample(n=1, weights=df_r_1['weights'])
-            else:
-                filt_r_1 = df_r['district_num'] == int(selected_district)
-                df_r_1 = df_r[filt_r_1]
-                df_r_1['rating2'] = df_r_1['total_rating'].apply(
-                    lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                df_r_1['weights'] = df_r_1['rating2'] / df_r_1['rating2'].sum()
-                restaurant_1 = df_r_1.sample(n=1, weights=df_r_1['weights'])
+            filt_r_1_2 = (df_r['new_place_category'] == '早午餐') & (
+                df_r['latitude'] > attraction_1['latitude'].values[0]) & (df_r['district_num'] == int(selected_district)) & (df_r['latitude'] < attraction_2['latitude'].values[0])
+            filt_r_1_3 = (df_r['new_place_category'] == '早午餐') & (
+                df_r['district_num'] == int(selected_district))
+            restaurant_1 = place_filter(df_r, filt_r_1, filt_r_1_2, filt_r_1_3)
 
             # category_list 接收回傳值
             category_list = request.form.getlist('food')
@@ -229,94 +288,145 @@ def map():
                 category_list_new.remove('咖啡甜點')
             else:
                 category_list_new = category_list.copy()
-            category_all = ['中式', '韓式', '台灣小吃/熱炒店', '異國料理',
-                            '港式', '意式', '燒烤店', '南洋', '美式', '火鍋', '素食']
 
             # 午餐要選在attraction_1['latitude'] attraction_2['latitude']中間，且符合使用者選擇的類別
-            filt_r_2 = df_r[df_r['new_place_category'].isin(category_list_new)]
-            filt_r_2 = filt_r_2[attraction_1['latitude'].values[0]
-                                < filt_r_2['latitude']]
-            filt_r_2 = filt_r_2[attraction_2['latitude'].values[0]
-                                > filt_r_2['latitude']]
-            df_r_2 = filt_r_2[filt_r_2['district_num']
-                              == int(selected_district)]
-            df_r_2.shape[0]
-
-            if df_r_2.shape[0] != 0:
-                # 如果有在中間
-                df_r_2['rating2'] = df_r_2['total_rating'].apply(
-                    lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                df_r_2['weights'] = df_r_2['rating2'] / df_r_1['rating2'].sum()
-                restaurant_2 = df_r_2.sample(n=1, weights=df_r_2['weights'])
-            else:
-                # 如果不符合上述任一條件，就在該區隨機挑選一間餐廳
-                filt_r_2 = df_r[df_r['new_place_category'].isin(
-                    category_list_new)]
-                df_r_2 = filt_r_2[filt_r_2['district_num']
-                                  == int(selected_district)]
-                df_r_2['rating2'] = df_r_2['total_rating'].apply(
-                    lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                df_r_2['weights'] = df_r_2['rating2'] / df_r_1['rating2'].sum()
-                restaurant_2 = df_r_2.sample(n=1, weights=df_r_2['weights'])
+            filt_r_2 = (df_r['new_place_category'].isin(category_list_new)) & (attraction_1['latitude'].values[0]
+                                                                               < df_r['latitude']) & (attraction_2['latitude'].values[0] > df_r['latitude']) & (df_r['district_num'] == int(selected_district))
+            filt_r_2_2 = (df_r['new_place_category'].isin(category_list_new)) & (df_r['district_num'] == int(
+                selected_district)) & (attraction_2['latitude'].values[0] > df_r['latitude'])
+            filt_r_2_3 = (df_r['new_place_category'].isin(category_list_new)) & (df_r['district_num'] == int(
+                selected_district)) & (attraction_2['latitude'].values[0] < df_r['latitude'])
+            restaurant_2 = place_filter(df_r, filt_r_2, filt_r_2_2, filt_r_2_3)
 
             # 景點3要篩選latitude > attraction_2的latitude
             if '咖啡甜點' in category_list:
-
                 filt_r_3 = (df_r['latitude'] > attraction_2['latitude'].values[0]) & (
                     df_r['district_num'] == int(selected_district)) & (df_r['new_place_category'] == '咖啡甜點')
-                df_r_3 = df_r[filt_r_3]
-                if df_r_3.shape[0] != 0:
-                    df_r_3['rating2'] = df_r_3['total_rating'].apply(
-                        lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                    df_r_3['weights'] = df_r_3['rating2'] / \
-                        df_r_3['rating2'].sum()
-                    restaurant_attraction_3 = df_r_3.sample(
-                        n=1, weights=df_r_3['weights'])
-                else:
-                    filt_a_3 = (df_a2['latitude'] < attraction_2['latitude'].values[0]) & (
-                        df_a2['district_num'] == int(selected_district))
-                    df_a_3 = df_a2[filt_a_3]
-                    if df_a_3.shape[0] != 0:
-                        df_a_3['rating2'] = df_a_3['total_rating'].apply(
-                            lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                        df_a_3['weights'] = df_a_3['rating2'] / \
-                            df_a_3['rating2'].sum()
-                        restaurant_attraction_3 = df_a_3.sample(
-                            n=1, weights=df_a_3['weights'])
-                    else:
-                        # 如果不符合上述任一條件，就在該區隨機挑選一個景點
-                        filt_a_3 = df_a2['district_num'] == int(
-                            selected_district)
-                        df_a_3 = df_a2[filt_a_3]
-                        df_a_3['rating2'] = df_a_3['total_rating'].apply(
-                            lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                        df_a_3['weights'] = df_a_3['rating2'] / \
-                            df_a_3['rating2'].sum()
-                        restaurant_attraction_3 = df_a_3.sample(
-                            n=1, weights=df_a_3['weights'])
-
+                filt_r_3_2 = (df_r['latitude'] < attraction_2['latitude'].values[0]) & (df_r['district_num'] == int(
+                    selected_district)) & (df_r['new_place_category'] == '咖啡甜點') & (df_r['latitude'] > attraction_1['latitude'].values[0])
+                filt_r_3_3 = (df_r['district_num'] == int(selected_district)) & (
+                    df_r['new_place_category'] == '咖啡甜點')
+                restaurant_attraction_3 = place_filter(
+                    df_r, filt_r_3, filt_r_3_2, filt_r_3_3)
             else:
                 filt_a_3 = (df_a2['latitude'] > attraction_2['latitude'].values[0]) & (
                     df_a2['district_num'] == int(selected_district))
-                df_a_3 = df_a2[filt_a_3]
+                filt_a_3_2 = (df_a2['latitude'] < attraction_2['latitude'].values[0]) & (df_a2['district_num'] == int(
+                    selected_district)) & (df_a2['latitude'] > attraction_1['latitude'].values[0])
+                filt_a_3_3 = (df_a2['district_num'] == int(selected_district))
+                restaurant_attraction_3 = place_filter(
+                    df_a2, filt_a_3, filt_a_3_2, filt_a_3_3)
+            # filt_r_1 = (df_r['new_place_category'] == '早午餐') & (
+            #     df_r['latitude'] < attraction_1['latitude'].values[0]) & (df_r['district_num'] == int(selected_district))
+            # df_r_1 = df_r[filt_r_1]
+            # if df_r_1.shape[0] != 0:
+            #     df_r_1['rating2'] = df_r_1['total_rating'].apply(
+            #         lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+            #     df_r_1['weights'] = df_r_1['rating2'] / df_r_1['rating2'].sum()
+            #     restaurant_1 = df_r_1.sample(n=1, weights=df_r_1['weights'])
+            # else:
+            #     filt_r_1 = df_r['district_num'] == int(selected_district)
+            #     df_r_1 = df_r[filt_r_1]
+            #     df_r_1['rating2'] = df_r_1['total_rating'].apply(
+            #         lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+            #     df_r_1['weights'] = df_r_1['rating2'] / df_r_1['rating2'].sum()
+            #     restaurant_1 = df_r_1.sample(n=1, weights=df_r_1['weights'])
 
-                if df_a_3.shape[0] != 0:
-                    df_a_3['rating2'] = df_a_3['total_rating'].apply(
-                        lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                    df_a_3['weights'] = df_a_3['rating2'] / \
-                        df_a_3['rating2'].sum()
-                    restaurant_attraction_3 = df_a_3.sample(
-                        n=1, weights=df_a_3['weights'])
-                else:
-                    # 如果不符合上述任一條件，就在該區隨機挑選一個景點
-                    filt_a_3 = df_a2['district_num'] == int(selected_district)
-                    df_a_3 = df_a2[filt_a_3]
-                    df_a_3['rating2'] = df_a_3['total_rating'].apply(
-                        lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                    df_a_3['weights'] = df_a_3['rating2'] / \
-                        df_a_3['rating2'].sum()
-                    restaurant_attraction_3 = df_a_3.sample(
-                        n=1, weights=df_a_3['weights'])
+            # # category_list 接收回傳值
+            # category_list = request.form.getlist('food')
+            # if '咖啡甜點' in category_list:
+            #     category_list_new = category_list.copy()
+            #     category_list_new.remove('咖啡甜點')
+            # else:
+            #     category_list_new = category_list.copy()
+            # category_all = ['中式', '韓式', '台灣小吃/熱炒店', '異國料理',
+            #                 '港式', '意式', '燒烤店', '南洋', '美式', '火鍋', '素食']
+
+            # # 午餐要選在attraction_1['latitude'] attraction_2['latitude']中間，且符合使用者選擇的類別
+            # filt_r_2 = df_r[df_r['new_place_category'].isin(category_list_new)]
+            # filt_r_2 = filt_r_2[attraction_1['latitude'].values[0]
+            #                     < filt_r_2['latitude']]
+            # filt_r_2 = filt_r_2[attraction_2['latitude'].values[0]
+            #                     > filt_r_2['latitude']]
+            # df_r_2 = filt_r_2[filt_r_2['district_num']
+            #                   == int(selected_district)]
+            # df_r_2.shape[0]
+
+            # if df_r_2.shape[0] != 0:
+            #     # 如果有在中間
+            #     df_r_2['rating2'] = df_r_2['total_rating'].apply(
+            #         lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+            #     df_r_2['weights'] = df_r_2['rating2'] / df_r_1['rating2'].sum()
+            #     restaurant_2 = df_r_2.sample(n=1, weights=df_r_2['weights'])
+            # else:
+            #     # 如果不符合上述任一條件，就在該區隨機挑選一間餐廳
+            #     filt_r_2 = df_r[df_r['new_place_category'].isin(
+            #         category_list_new)]
+            #     df_r_2 = filt_r_2[filt_r_2['district_num']
+            #                       == int(selected_district)]
+            #     df_r_2['rating2'] = df_r_2['total_rating'].apply(
+            #         lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+            #     df_r_2['weights'] = df_r_2['rating2'] / df_r_1['rating2'].sum()
+            #     restaurant_2 = df_r_2.sample(n=1, weights=df_r_2['weights'])
+
+            # # 景點3要篩選latitude > attraction_2的latitude
+            # if '咖啡甜點' in category_list:
+
+            #     filt_r_3 = (df_r['latitude'] > attraction_2['latitude'].values[0]) & (
+            #         df_r['district_num'] == int(selected_district)) & (df_r['new_place_category'] == '咖啡甜點')
+            #     df_r_3 = df_r[filt_r_3]
+            #     if df_r_3.shape[0] != 0:
+            #         df_r_3['rating2'] = df_r_3['total_rating'].apply(
+            #             lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+            #         df_r_3['weights'] = df_r_3['rating2'] / \
+            #             df_r_3['rating2'].sum()
+            #         restaurant_attraction_3 = df_r_3.sample(
+            #             n=1, weights=df_r_3['weights'])
+            #     else:
+            #         filt_a_3 = (df_a2['latitude'] < attraction_2['latitude'].values[0]) & (
+            #             df_a2['district_num'] == int(selected_district))
+            #         df_a_3 = df_a2[filt_a_3]
+            #         if df_a_3.shape[0] != 0:
+            #             df_a_3['rating2'] = df_a_3['total_rating'].apply(
+            #                 lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+            #             df_a_3['weights'] = df_a_3['rating2'] / \
+            #                 df_a_3['rating2'].sum()
+            #             restaurant_attraction_3 = df_a_3.sample(
+            #                 n=1, weights=df_a_3['weights'])
+            #         else:
+            #             # 如果不符合上述任一條件，就在該區隨機挑選一個景點
+            #             filt_a_3 = df_a2['district_num'] == int(
+            #                 selected_district)
+            #             df_a_3 = df_a2[filt_a_3]
+            #             df_a_3['rating2'] = df_a_3['total_rating'].apply(
+            #                 lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+            #             df_a_3['weights'] = df_a_3['rating2'] / \
+            #                 df_a_3['rating2'].sum()
+            #             restaurant_attraction_3 = df_a_3.sample(
+            #                 n=1, weights=df_a_3['weights'])
+
+            # else:
+            #     filt_a_3 = (df_a2['latitude'] > attraction_2['latitude'].values[0]) & (
+            #         df_a2['district_num'] == int(selected_district))
+            #     df_a_3 = df_a2[filt_a_3]
+
+            #     if df_a_3.shape[0] != 0:
+            #         df_a_3['rating2'] = df_a_3['total_rating'].apply(
+            #             lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+            #         df_a_3['weights'] = df_a_3['rating2'] / \
+            #             df_a_3['rating2'].sum()
+            #         restaurant_attraction_3 = df_a_3.sample(
+            #             n=1, weights=df_a_3['weights'])
+            #     else:
+            #         # 如果不符合上述任一條件，就在該區隨機挑選一個景點
+            #         filt_a_3 = df_a2['district_num'] == int(selected_district)
+            #         df_a_3 = df_a2[filt_a_3]
+            #         df_a_3['rating2'] = df_a_3['total_rating'].apply(
+            #             lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+            #         df_a_3['weights'] = df_a_3['rating2'] / \
+            #             df_a_3['rating2'].sum()
+            #         restaurant_attraction_3 = df_a_3.sample(
+            #             n=1, weights=df_a_3['weights'])
 
     #         filt_a_3 = (df_a2['latitude'] > attraction_2['latitude'].values[0]) & (df_a2['district_num'] == int(selected_district))
     #         df_a_3 = df_a2[filt_a_3]
@@ -336,23 +446,14 @@ def map():
     else:
         # 經度差距大於緯度差距，以經度分割
         if d_longitude > 0:
-            # 如果attraction_1在attraction_2的右邊
             # 早餐店要篩選longitude > attraction_1的longitude
             filt_r_1 = (df_r['new_place_category'] == '早午餐') & (
                 df_r['longitude'] > attraction_1['longitude'].values[0]) & (df_r['district_num'] == int(selected_district))
-            df_r_1 = df_r[filt_r_1]
-            if df_r_1.shape[0] != 0:
-                df_r_1['rating2'] = df_r_1['total_rating'].apply(
-                    lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                df_r_1['weights'] = df_r_1['rating2'] / df_r_1['rating2'].sum()
-                restaurant_1 = df_r_1.sample(n=1, weights=df_r_1['weights'])
-            else:
-                filt_r_1 = df_r['district_num'] == int(selected_district)
-                df_r_1 = df_r[filt_r_1]
-                df_r_1['rating2'] = df_r_1['total_rating'].apply(
-                    lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                df_r_1['weights'] = df_r_1['rating2'] / df_r_1['rating2'].sum()
-                restaurant_1 = df_r_1.sample(n=1, weights=df_r_1['weights'])
+            filt_r_1_2 = (df_r['new_place_category'] == '早午餐') & (
+                df_r['longitude'] < attraction_1['longitude'].values[0]) & (df_r['district_num'] == int(selected_district)) & (df_r['longitude'] > attraction_2['longitude'].values[0])
+            filt_r_1_3 = (df_r['new_place_category'] == '早午餐') & (
+                df_r['district_num'] == int(selected_district))
+            restaurant_1 = place_filter(df_r, filt_r_1, filt_r_1_2, filt_r_1_3)
 
             # category_list 接收回傳值
             category_list = request.form.getlist('food')
@@ -361,128 +462,44 @@ def map():
                 category_list_new.remove('咖啡甜點')
             else:
                 category_list_new = category_list.copy()
-            category_all = ['中式', '韓式', '台灣小吃/熱炒店', '異國料理',
-                            '港式', '意式', '燒烤店', '南洋', '美式', '火鍋', '素食']
 
-            # 午餐要選在attraction_1['longitude'] attraction_2['longitude']中間
-            filt_r_2 = df_r[df_r['new_place_category'].isin(category_list_new)]
-            filt_r_2 = filt_r_2[attraction_1['longitude'].values[0]
-                                > filt_r_2['longitude']]
-            filt_r_2 = filt_r_2[attraction_2['longitude'].values[0]
-                                < filt_r_2['longitude']]
-            df_r_2 = filt_r_2[filt_r_2['district_num']
-                              == int(selected_district)]
-            df_r_2.shape[0]
-
-            if df_r_2.shape[0] != 0:
-                # 如果有在中間
-                df_r_2['rating2'] = df_r_2['total_rating'].apply(
-                    lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                df_r_2['weights'] = df_r_2['rating2'] / df_r_1['rating2'].sum()
-                restaurant_2 = df_r_2.sample(n=1, weights=df_r_2['weights'])
-            else:
-                # 如果不符合上述任一條件，就在該區隨機挑選一間餐廳
-                filt_r_2 = df_r[df_r['new_place_category'].isin(
-                    category_list_new)]
-                df_r_2 = filt_r_2[filt_r_2['district_num']
-                                  == int(selected_district)]
-                df_r_2['rating2'] = df_r_2['total_rating'].apply(
-                    lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                df_r_2['weights'] = df_r_2['rating2'] / df_r_1['rating2'].sum()
-                restaurant_2 = df_r_2.sample(n=1, weights=df_r_2['weights'])
+            # 午餐要選在attraction_1['longitude'] attraction_2['longitude']中間，且符合使用者選擇的類別
+            filt_r_2 = (df_r['new_place_category'].isin(category_list_new)) & (attraction_1['longitude'].values[0]
+                                                                               > df_r['longitude']) & (attraction_2['longitude'].values[0] < df_r['longitude']) & (df_r['district_num'] == int(selected_district))
+            filt_r_2_2 = (df_r['new_place_category'].isin(category_list_new)) & (df_r['district_num'] == int(
+                selected_district)) & (attraction_2['longitude'].values[0] < df_r['longitude'])
+            filt_r_2_3 = (df_r['new_place_category'].isin(category_list_new)) & (df_r['district_num'] == int(
+                selected_district)) & (attraction_2['longitude'].values[0] > df_r['longitude'])
+            restaurant_2 = place_filter(df_r, filt_r_2, filt_r_2_2, filt_r_2_3)
 
             # 景點3要篩選longitude < attraction_2的longitude
             if '咖啡甜點' in category_list:
-
                 filt_r_3 = (df_r['longitude'] < attraction_2['longitude'].values[0]) & (
                     df_r['district_num'] == int(selected_district)) & (df_r['new_place_category'] == '咖啡甜點')
-                df_r_3 = df_r[filt_r_3]
-                if df_r_3.shape[0] != 0:
-                    df_r_3['rating2'] = df_r_3['total_rating'].apply(
-                        lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                    df_r_3['weights'] = df_r_3['rating2'] / \
-                        df_r_3['rating2'].sum()
-                    restaurant_attraction_3 = df_r_3.sample(
-                        n=1, weights=df_r_3['weights'])
-                else:
-                    filt_a_3 = (df_a2['latitude'] < attraction_2['latitude'].values[0]) & (
-                        df_a2['district_num'] == int(selected_district))
-                    df_a_3 = df_a2[filt_a_3]
-                    if df_a_3.shape[0] != 0:
-                        df_a_3['rating2'] = df_a_3['total_rating'].apply(
-                            lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                        df_a_3['weights'] = df_a_3['rating2'] / \
-                            df_a_3['rating2'].sum()
-                        restaurant_attraction_3 = df_a_3.sample(
-                            n=1, weights=df_a_3['weights'])
-                    else:
-                        # 如果不符合上述任一條件，就在該區隨機挑選一個景點
-                        filt_a_3 = df_a2['district_num'] == int(
-                            selected_district)
-                        df_a_3 = df_a2[filt_a_3]
-                        df_a_3['rating2'] = df_a_3['total_rating'].apply(
-                            lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                        df_a_3['weights'] = df_a_3['rating2'] / \
-                            df_a_3['rating2'].sum()
-                        restaurant_attraction_3 = df_a_3.sample(
-                            n=1, weights=df_a_3['weights'])
-
+                filt_r_3_2 = (df_r['longitude'] > attraction_2['longitude'].values[0]) & (df_r['district_num'] == int(
+                    selected_district)) & (df_r['new_place_category'] == '咖啡甜點') & (df_r['longitude'] < attraction_1['longitude'].values[0])
+                filt_r_3_3 = (df_r['district_num'] == int(selected_district)) & (
+                    df_r['new_place_category'] == '咖啡甜點')
+                restaurant_attraction_3 = place_filter(
+                    df_r, filt_r_3, filt_r_3_2, filt_r_3_3)
             else:
                 filt_a_3 = (df_a2['longitude'] < attraction_2['longitude'].values[0]) & (
                     df_a2['district_num'] == int(selected_district))
-                df_a_3 = df_a2[filt_a_3]
-
-                if df_a_3.shape[0] != 0:
-                    df_a_3['rating2'] = df_a_3['total_rating'].apply(
-                        lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                    df_a_3['weights'] = df_a_3['rating2'] / \
-                        df_a_3['rating2'].sum()
-                    restaurant_attraction_3 = df_a_3.sample(
-                        n=1, weights=df_a_3['weights'])
-                else:
-                    # 如果不符合上述任一條件，就在該區隨機挑選一個景點
-                    filt_a_3 = df_a2['district_num'] == int(selected_district)
-                    df_a_3 = df_a2[filt_a_3]
-                    df_a_3['rating2'] = df_a_3['total_rating'].apply(
-                        lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                    df_a_3['weights'] = df_a_3['rating2'] / \
-                        df_a_3['rating2'].sum()
-                    restaurant_attraction_3 = df_a_3.sample(
-                        n=1, weights=df_a_3['weights'])
-
-    #         filt_a_3 = (df_a2['longitude'] < attraction_2['longitude'].values[0]) & (df_a2['district_num'] == int(selected_district))
-    #         df_a_3 = df_a2[filt_a_3]
-
-    #         if df_a_3.shape[0] != 0:
-    #             df_a_3['rating2'] = df_a_3['total_rating'].apply(lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-    #             df_a_3['weights'] = df_a_3['rating2'] / df_a_3['rating2'].sum()
-    #             attraction_3 = df_a_3.sample(n=1, weights=df_a_3['weights'])
-    #         else:
-    #             # 如果不符合上述任一條件，就在該區隨機挑選一個景點
-    #             filt_a_3 = df_a2['district_num'] == int(selected_district)
-    #             df_a_3 = df_a2[filt_a_3]
-    #             df_a_3['rating2'] = df_a_3['total_rating'].apply(lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-    #             df_a_3['weights'] = df_a_3['rating2'] / df_a_3['rating2'].sum()
-    #             attraction_3 = df_a_3.sample(n=1, weights=df_a_3['weights'])
-
+                filt_a_3_2 = (df_a2['longitude'] > attraction_2['longitude'].values[0]) & (df_a2['district_num'] == int(
+                    selected_district)) & (df_a2['longitude'] < attraction_1['longitude'].values[0])
+                filt_a_3_3 = (df_a2['district_num'] == int(selected_district))
+                restaurant_attraction_3 = place_filter(
+                    df_a2, filt_a_3, filt_a_3_2, filt_a_3_3)
         else:
-            # 如果attraction_1在attraction_2的左邊
+            # 如果attraction_1在attraction_2的下面
             # 早餐店要篩選longitude < attraction_1的longitude
             filt_r_1 = (df_r['new_place_category'] == '早午餐') & (
                 df_r['longitude'] < attraction_1['longitude'].values[0]) & (df_r['district_num'] == int(selected_district))
-            df_r_1 = df_r[filt_r_1]
-            if df_r_1.shape[0] != 0:
-                df_r_1['rating2'] = df_r_1['total_rating'].apply(
-                    lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                df_r_1['weights'] = df_r_1['rating2'] / df_r_1['rating2'].sum()
-                restaurant_1 = df_r_1.sample(n=1, weights=df_r_1['weights'])
-            else:
-                filt_r_1 = df_r['district_num'] == int(selected_district)
-                df_r_1 = df_r[filt_r_1]
-                df_r_1['rating2'] = df_r_1['total_rating'].apply(
-                    lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                df_r_1['weights'] = df_r_1['rating2'] / df_r_1['rating2'].sum()
-                restaurant_1 = df_r_1.sample(n=1, weights=df_r_1['weights'])
+            filt_r_1_2 = (df_r['new_place_category'] == '早午餐') & (
+                df_r['longitude'] > attraction_1['longitude'].values[0]) & (df_r['district_num'] == int(selected_district)) & (df_r['longitude'] < attraction_2['longitude'].values[0])
+            filt_r_1_3 = (df_r['new_place_category'] == '早午餐') & (
+                df_r['district_num'] == int(selected_district))
+            restaurant_1 = place_filter(df_r, filt_r_1, filt_r_1_2, filt_r_1_3)
 
             # category_list 接收回傳值
             category_list = request.form.getlist('food')
@@ -491,93 +508,276 @@ def map():
                 category_list_new.remove('咖啡甜點')
             else:
                 category_list_new = category_list.copy()
-            category_all = ['中式', '韓式', '台灣小吃/熱炒店', '異國料理',
-                            '港式', '意式', '燒烤店', '南洋', '美式', '火鍋', '素食']
 
-            # 午餐要選在attraction_1['longitude'] attraction_2['longitude']中間
-            filt_r_2 = df_r[df_r['new_place_category'].isin(category_list_new)]
-            filt_r_2 = filt_r_2[attraction_1['longitude'].values[0]
-                                < filt_r_2['longitude']]
-            filt_r_2 = filt_r_2[attraction_2['longitude'].values[0]
-                                > filt_r_2['longitude']]
-            df_r_2 = filt_r_2[filt_r_2['district_num']
-                              == int(selected_district)]
-            df_r_2.shape[0]
+            # 午餐要選在attraction_1['longitude'] attraction_2['longitude']中間，且符合使用者選擇的類別
+            filt_r_2 = (df_r['new_place_category'].isin(category_list_new)) & (attraction_1['longitude'].values[0]
+                                                                               < df_r['longitude']) & (attraction_2['longitude'].values[0] > df_r['longitude']) & (df_r['district_num'] == int(selected_district))
+            filt_r_2_2 = (df_r['new_place_category'].isin(category_list_new)) & (df_r['district_num'] == int(
+                selected_district)) & (attraction_2['longitude'].values[0] > df_r['longitude'])
+            filt_r_2_3 = (df_r['new_place_category'].isin(category_list_new)) & (df_r['district_num'] == int(
+                selected_district)) & (attraction_2['longitude'].values[0] < df_r['longitude'])
+            restaurant_2 = place_filter(df_r, filt_r_2, filt_r_2_2, filt_r_2_3)
 
-            if df_r_2.shape[0] != 0:
-                # 如果有在中間
-                df_r_2['rating2'] = df_r_2['total_rating'].apply(
-                    lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                df_r_2['weights'] = df_r_2['rating2'] / df_r_1['rating2'].sum()
-                restaurant_2 = df_r_2.sample(n=1, weights=df_r_2['weights'])
-            else:
-                # 如果不符合上述任一條件，就在該區隨機挑選一間餐廳
-                filt_r_2 = df_r[df_r['new_place_category'].isin(
-                    category_list_new)]
-                df_r_2 = filt_r_2[filt_r_2['district_num']
-                                  == int(selected_district)]
-                df_r_2['rating2'] = df_r_2['total_rating'].apply(
-                    lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                df_r_2['weights'] = df_r_2['rating2'] / df_r_1['rating2'].sum()
-                restaurant_2 = df_r_2.sample(n=1, weights=df_r_2['weights'])
             # 景點3要篩選longitude > attraction_2的longitude
             if '咖啡甜點' in category_list:
-
                 filt_r_3 = (df_r['longitude'] > attraction_2['longitude'].values[0]) & (
                     df_r['district_num'] == int(selected_district)) & (df_r['new_place_category'] == '咖啡甜點')
-                df_r_3 = df_r[filt_r_3]
-                if df_r_3.shape[0] != 0:
-                    df_r_3['rating2'] = df_r_3['total_rating'].apply(
-                        lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                    df_r_3['weights'] = df_r_3['rating2'] / \
-                        df_r_3['rating2'].sum()
-                    restaurant_attraction_3 = df_r_3.sample(
-                        n=1, weights=df_r_3['weights'])
-                else:
-                    filt_a_3 = (df_a2['latitude'] < attraction_2['latitude'].values[0]) & (
-                        df_a2['district_num'] == int(selected_district))
-                    df_a_3 = df_a2[filt_a_3]
-                    if df_a_3.shape[0] != 0:
-                        df_a_3['rating2'] = df_a_3['total_rating'].apply(
-                            lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                        df_a_3['weights'] = df_a_3['rating2'] / \
-                            df_a_3['rating2'].sum()
-                        restaurant_attraction_3 = df_a_3.sample(
-                            n=1, weights=df_a_3['weights'])
-                    else:
-                        # 如果不符合上述任一條件，就在該區隨機挑選一個景點
-                        filt_a_3 = df_a2['district_num'] == int(
-                            selected_district)
-                        df_a_3 = df_a2[filt_a_3]
-                        df_a_3['rating2'] = df_a_3['total_rating'].apply(
-                            lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                        df_a_3['weights'] = df_a_3['rating2'] / \
-                            df_a_3['rating2'].sum()
-                        restaurant_attraction_3 = df_a_3.sample(
-                            n=1, weights=df_a_3['weights'])
-
+                filt_r_3_2 = (df_r['longitude'] < attraction_2['longitude'].values[0]) & (df_r['district_num'] == int(
+                    selected_district)) & (df_r['new_place_category'] == '咖啡甜點') & (df_r['longitude'] > attraction_1['longitude'].values[0])
+                filt_r_3_3 = (df_r['district_num'] == int(selected_district)) & (
+                    df_r['new_place_category'] == '咖啡甜點')
+                restaurant_attraction_3 = place_filter(
+                    df_r, filt_r_3, filt_r_3_2, filt_r_3_3)
             else:
                 filt_a_3 = (df_a2['longitude'] > attraction_2['longitude'].values[0]) & (
                     df_a2['district_num'] == int(selected_district))
-                df_a_3 = df_a2[filt_a_3]
+                filt_a_3_2 = (df_a2['longitude'] < attraction_2['longitude'].values[0]) & (df_a2['district_num'] == int(
+                    selected_district)) & (df_a2['longitude'] > attraction_1['longitude'].values[0])
+                filt_a_3_3 = (df_a2['district_num'] == int(selected_district))
+                restaurant_attraction_3 = place_filter(
+                    df_a2, filt_a_3, filt_a_3_2, filt_a_3_3)
+            # 如果attraction_1在attraction_2的右邊
+            # 早餐店要篩選longitude > attraction_1的longitude
+    #         filt_r_1 = (df_r['new_place_category'] == '早午餐') & (
+    #             df_r['longitude'] > attraction_1['longitude'].values[0]) & (df_r['district_num'] == int(selected_district))
+    #         df_r_1 = df_r[filt_r_1]
+    #         if df_r_1.shape[0] != 0:
+    #             df_r_1['rating2'] = df_r_1['total_rating'].apply(
+    #                 lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    #             df_r_1['weights'] = df_r_1['rating2'] / df_r_1['rating2'].sum()
+    #             restaurant_1 = df_r_1.sample(n=1, weights=df_r_1['weights'])
+    #         else:
+    #             filt_r_1 = df_r['district_num'] == int(selected_district)
+    #             df_r_1 = df_r[filt_r_1]
+    #             df_r_1['rating2'] = df_r_1['total_rating'].apply(
+    #                 lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    #             df_r_1['weights'] = df_r_1['rating2'] / df_r_1['rating2'].sum()
+    #             restaurant_1 = df_r_1.sample(n=1, weights=df_r_1['weights'])
 
-                if df_a_3.shape[0] != 0:
-                    df_a_3['rating2'] = df_a_3['total_rating'].apply(
-                        lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                    df_a_3['weights'] = df_a_3['rating2'] / \
-                        df_a_3['rating2'].sum()
-                    restaurant_attraction_3 = df_a_3.sample(
-                        n=1, weights=df_a_3['weights'])
-                else:
-                    # 如果不符合上述任一條件，就在該區隨機挑選一個景點
-                    filt_a_3 = df_a2['district_num'] == int(selected_district)
-                    df_a_3 = df_a2[filt_a_3]
-                    df_a_3['rating2'] = df_a_3['total_rating'].apply(
-                        lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
-                    df_a_3['weights'] = df_a_3['rating2'] / \
-                        df_a_3['rating2'].sum()
-                    restaurant_attraction_3 = df_a_3.sample(
-                        n=1, weights=df_a_3['weights'])
+    #         # category_list 接收回傳值
+    #         category_list = request.form.getlist('food')
+    #         if '咖啡甜點' in category_list:
+    #             category_list_new = category_list.copy()
+    #             category_list_new.remove('咖啡甜點')
+    #         else:
+    #             category_list_new = category_list.copy()
+    #         category_all = ['中式', '韓式', '台灣小吃/熱炒店', '異國料理',
+    #                         '港式', '意式', '燒烤店', '南洋', '美式', '火鍋', '素食']
+
+    #         # 午餐要選在attraction_1['longitude'] attraction_2['longitude']中間
+    #         filt_r_2 = df_r[df_r['new_place_category'].isin(category_list_new)]
+    #         filt_r_2 = filt_r_2[attraction_1['longitude'].values[0]
+    #                             > filt_r_2['longitude']]
+    #         filt_r_2 = filt_r_2[attraction_2['longitude'].values[0]
+    #                             < filt_r_2['longitude']]
+    #         df_r_2 = filt_r_2[filt_r_2['district_num']
+    #                           == int(selected_district)]
+    #         df_r_2.shape[0]
+
+    #         if df_r_2.shape[0] != 0:
+    #             # 如果有在中間
+    #             df_r_2['rating2'] = df_r_2['total_rating'].apply(
+    #                 lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    #             df_r_2['weights'] = df_r_2['rating2'] / df_r_1['rating2'].sum()
+    #             restaurant_2 = df_r_2.sample(n=1, weights=df_r_2['weights'])
+    #         else:
+    #             # 如果不符合上述任一條件，就在該區隨機挑選一間餐廳
+    #             filt_r_2 = df_r[df_r['new_place_category'].isin(
+    #                 category_list_new)]
+    #             df_r_2 = filt_r_2[filt_r_2['district_num']
+    #                               == int(selected_district)]
+    #             df_r_2['rating2'] = df_r_2['total_rating'].apply(
+    #                 lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    #             df_r_2['weights'] = df_r_2['rating2'] / df_r_1['rating2'].sum()
+    #             restaurant_2 = df_r_2.sample(n=1, weights=df_r_2['weights'])
+
+    #         # 景點3要篩選longitude < attraction_2的longitude
+    #         if '咖啡甜點' in category_list:
+
+    #             filt_r_3 = (df_r['longitude'] < attraction_2['longitude'].values[0]) & (
+    #                 df_r['district_num'] == int(selected_district)) & (df_r['new_place_category'] == '咖啡甜點')
+    #             df_r_3 = df_r[filt_r_3]
+    #             if df_r_3.shape[0] != 0:
+    #                 df_r_3['rating2'] = df_r_3['total_rating'].apply(
+    #                     lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    #                 df_r_3['weights'] = df_r_3['rating2'] / \
+    #                     df_r_3['rating2'].sum()
+    #                 restaurant_attraction_3 = df_r_3.sample(
+    #                     n=1, weights=df_r_3['weights'])
+    #             else:
+    #                 filt_a_3 = (df_a2['latitude'] < attraction_2['latitude'].values[0]) & (
+    #                     df_a2['district_num'] == int(selected_district))
+    #                 df_a_3 = df_a2[filt_a_3]
+    #                 if df_a_3.shape[0] != 0:
+    #                     df_a_3['rating2'] = df_a_3['total_rating'].apply(
+    #                         lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    #                     df_a_3['weights'] = df_a_3['rating2'] / \
+    #                         df_a_3['rating2'].sum()
+    #                     restaurant_attraction_3 = df_a_3.sample(
+    #                         n=1, weights=df_a_3['weights'])
+    #                 else:
+    #                     # 如果不符合上述任一條件，就在該區隨機挑選一個景點
+    #                     filt_a_3 = df_a2['district_num'] == int(
+    #                         selected_district)
+    #                     df_a_3 = df_a2[filt_a_3]
+    #                     df_a_3['rating2'] = df_a_3['total_rating'].apply(
+    #                         lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    #                     df_a_3['weights'] = df_a_3['rating2'] / \
+    #                         df_a_3['rating2'].sum()
+    #                     restaurant_attraction_3 = df_a_3.sample(
+    #                         n=1, weights=df_a_3['weights'])
+
+    #         else:
+    #             filt_a_3 = (df_a2['longitude'] < attraction_2['longitude'].values[0]) & (
+    #                 df_a2['district_num'] == int(selected_district))
+    #             df_a_3 = df_a2[filt_a_3]
+
+    #             if df_a_3.shape[0] != 0:
+    #                 df_a_3['rating2'] = df_a_3['total_rating'].apply(
+    #                     lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    #                 df_a_3['weights'] = df_a_3['rating2'] / \
+    #                     df_a_3['rating2'].sum()
+    #                 restaurant_attraction_3 = df_a_3.sample(
+    #                     n=1, weights=df_a_3['weights'])
+    #             else:
+    #                 # 如果不符合上述任一條件，就在該區隨機挑選一個景點
+    #                 filt_a_3 = df_a2['district_num'] == int(selected_district)
+    #                 df_a_3 = df_a2[filt_a_3]
+    #                 df_a_3['rating2'] = df_a_3['total_rating'].apply(
+    #                     lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    #                 df_a_3['weights'] = df_a_3['rating2'] / \
+    #                     df_a_3['rating2'].sum()
+    #                 restaurant_attraction_3 = df_a_3.sample(
+    #                     n=1, weights=df_a_3['weights'])
+
+    # #         filt_a_3 = (df_a2['longitude'] < attraction_2['longitude'].values[0]) & (df_a2['district_num'] == int(selected_district))
+    # #         df_a_3 = df_a2[filt_a_3]
+
+    # #         if df_a_3.shape[0] != 0:
+    # #             df_a_3['rating2'] = df_a_3['total_rating'].apply(lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    # #             df_a_3['weights'] = df_a_3['rating2'] / df_a_3['rating2'].sum()
+    # #             attraction_3 = df_a_3.sample(n=1, weights=df_a_3['weights'])
+    # #         else:
+    # #             # 如果不符合上述任一條件，就在該區隨機挑選一個景點
+    # #             filt_a_3 = df_a2['district_num'] == int(selected_district)
+    # #             df_a_3 = df_a2[filt_a_3]
+    # #             df_a_3['rating2'] = df_a_3['total_rating'].apply(lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    # #             df_a_3['weights'] = df_a_3['rating2'] / df_a_3['rating2'].sum()
+    # #             attraction_3 = df_a_3.sample(n=1, weights=df_a_3['weights'])
+
+    #     else:
+    #         # 如果attraction_1在attraction_2的左邊
+    #         # 早餐店要篩選longitude < attraction_1的longitude
+    #         filt_r_1 = (df_r['new_place_category'] == '早午餐') & (
+    #             df_r['longitude'] < attraction_1['longitude'].values[0]) & (df_r['district_num'] == int(selected_district))
+    #         df_r_1 = df_r[filt_r_1]
+    #         if df_r_1.shape[0] != 0:
+    #             df_r_1['rating2'] = df_r_1['total_rating'].apply(
+    #                 lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    #             df_r_1['weights'] = df_r_1['rating2'] / df_r_1['rating2'].sum()
+    #             restaurant_1 = df_r_1.sample(n=1, weights=df_r_1['weights'])
+    #         else:
+    #             filt_r_1 = df_r['district_num'] == int(selected_district)
+    #             df_r_1 = df_r[filt_r_1]
+    #             df_r_1['rating2'] = df_r_1['total_rating'].apply(
+    #                 lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    #             df_r_1['weights'] = df_r_1['rating2'] / df_r_1['rating2'].sum()
+    #             restaurant_1 = df_r_1.sample(n=1, weights=df_r_1['weights'])
+
+    #         # category_list 接收回傳值
+    #         category_list = request.form.getlist('food')
+    #         if '咖啡甜點' in category_list:
+    #             category_list_new = category_list.copy()
+    #             category_list_new.remove('咖啡甜點')
+    #         else:
+    #             category_list_new = category_list.copy()
+    #         category_all = ['中式', '韓式', '台灣小吃/熱炒店', '異國料理',
+    #                         '港式', '意式', '燒烤店', '南洋', '美式', '火鍋', '素食']
+
+    #         # 午餐要選在attraction_1['longitude'] attraction_2['longitude']中間
+    #         filt_r_2 = df_r[df_r['new_place_category'].isin(category_list_new)]
+    #         filt_r_2 = filt_r_2[attraction_1['longitude'].values[0]
+    #                             < filt_r_2['longitude']]
+    #         filt_r_2 = filt_r_2[attraction_2['longitude'].values[0]
+    #                             > filt_r_2['longitude']]
+    #         df_r_2 = filt_r_2[filt_r_2['district_num']
+    #                           == int(selected_district)]
+    #         df_r_2.shape[0]
+
+    #         if df_r_2.shape[0] != 0:
+    #             # 如果有在中間
+    #             df_r_2['rating2'] = df_r_2['total_rating'].apply(
+    #                 lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    #             df_r_2['weights'] = df_r_2['rating2'] / df_r_1['rating2'].sum()
+    #             restaurant_2 = df_r_2.sample(n=1, weights=df_r_2['weights'])
+    #         else:
+    #             # 如果不符合上述任一條件，就在該區隨機挑選一間餐廳
+    #             filt_r_2 = df_r[df_r['new_place_category'].isin(
+    #                 category_list_new)]
+    #             df_r_2 = filt_r_2[filt_r_2['district_num']
+    #                               == int(selected_district)]
+    #             df_r_2['rating2'] = df_r_2['total_rating'].apply(
+    #                 lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    #             df_r_2['weights'] = df_r_2['rating2'] / df_r_1['rating2'].sum()
+    #             restaurant_2 = df_r_2.sample(n=1, weights=df_r_2['weights'])
+    #         # 景點3要篩選longitude > attraction_2的longitude
+    #         if '咖啡甜點' in category_list:
+
+    #             filt_r_3 = (df_r['longitude'] > attraction_2['longitude'].values[0]) & (
+    #                 df_r['district_num'] == int(selected_district)) & (df_r['new_place_category'] == '咖啡甜點')
+    #             df_r_3 = df_r[filt_r_3]
+    #             if df_r_3.shape[0] != 0:
+    #                 df_r_3['rating2'] = df_r_3['total_rating'].apply(
+    #                     lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    #                 df_r_3['weights'] = df_r_3['rating2'] / \
+    #                     df_r_3['rating2'].sum()
+    #                 restaurant_attraction_3 = df_r_3.sample(
+    #                     n=1, weights=df_r_3['weights'])
+    #             else:
+    #                 filt_a_3 = (df_a2['latitude'] < attraction_2['latitude'].values[0]) & (
+    #                     df_a2['district_num'] == int(selected_district))
+    #                 df_a_3 = df_a2[filt_a_3]
+    #                 if df_a_3.shape[0] != 0:
+    #                     df_a_3['rating2'] = df_a_3['total_rating'].apply(
+    #                         lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    #                     df_a_3['weights'] = df_a_3['rating2'] / \
+    #                         df_a_3['rating2'].sum()
+    #                     restaurant_attraction_3 = df_a_3.sample(
+    #                         n=1, weights=df_a_3['weights'])
+    #                 else:
+    #                     # 如果不符合上述任一條件，就在該區隨機挑選一個景點
+    #                     filt_a_3 = df_a2['district_num'] == int(
+    #                         selected_district)
+    #                     df_a_3 = df_a2[filt_a_3]
+    #                     df_a_3['rating2'] = df_a_3['total_rating'].apply(
+    #                         lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    #                     df_a_3['weights'] = df_a_3['rating2'] / \
+    #                         df_a_3['rating2'].sum()
+    #                     restaurant_attraction_3 = df_a_3.sample(
+    #                         n=1, weights=df_a_3['weights'])
+
+    #         else:
+    #             filt_a_3 = (df_a2['longitude'] > attraction_2['longitude'].values[0]) & (
+    #                 df_a2['district_num'] == int(selected_district))
+    #             df_a_3 = df_a2[filt_a_3]
+
+    #             if df_a_3.shape[0] != 0:
+    #                 df_a_3['rating2'] = df_a_3['total_rating'].apply(
+    #                     lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    #                 df_a_3['weights'] = df_a_3['rating2'] / \
+    #                     df_a_3['rating2'].sum()
+    #                 restaurant_attraction_3 = df_a_3.sample(
+    #                     n=1, weights=df_a_3['weights'])
+    #             else:
+    #                 # 如果不符合上述任一條件，就在該區隨機挑選一個景點
+    #                 filt_a_3 = df_a2['district_num'] == int(selected_district)
+    #                 df_a_3 = df_a2[filt_a_3]
+    #                 df_a_3['rating2'] = df_a_3['total_rating'].apply(
+    #                     lambda x: x*2 if x >= 4.3 else (x/2 if x <= 3.7 else x))
+    #                 df_a_3['weights'] = df_a_3['rating2'] / \
+    #                     df_a_3['rating2'].sum()
+    #                 restaurant_attraction_3 = df_a_3.sample(
+    #                     n=1, weights=df_a_3['weights'])
 
 #         filt_a_3 = (df_a2['longitude'] > attraction_2['longitude'].values[0]) & (df_a2['district_num'] == int(selected_district))
 #         df_a_3 = df_a2[filt_a_3]
