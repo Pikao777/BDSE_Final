@@ -24,7 +24,7 @@
       selection2.innerHTML = "";
 
       // add new options
-      for (var i = Number(selection1.value) + 1; i <= 23; i++) {
+      for (var i = Number(selection1.value) + 2; i <= 22; i++) {
         var option = document.createElement("option");
         option.value = i;
         option.text = i + ':00';
@@ -81,22 +81,19 @@
                     onchange="updateSelection2()" required
                     style="border-color:#8d99af;border-width:1px;border-style:solid">
                     <option disabled style="display: none" selected value>請選擇起始時間</option>
-                    <option value="7">7:00</option>
-                    <option value="8">8:00</option>
-                    <option value="9">9:00</option>
-                    <option value="10">10:00</option>
-                    <option value="11">11:00</option>
-                    <option value="12">12:00</option>
-                    <option value="13">13:00</option>
-                    <option value="14">14:00</option>
-                    <option value="15">15:00</option>
-                    <option value="16">16:00</option>
-                    <option value="17">17:00</option>
-                    <option value="18">18:00</option>
-                    <option value="19">19:00</option>
-                    <option value="20">20:00</option>
-                    <option value="21">21:00</option>
-                    <option value="22">22:00</option>
+                    <option value=8>8:00</option>
+                    <option value=9>9:00</option>
+                    <option value=10>10:00</option>
+                    <option value=11>11:00</option>
+                    <option value=12>12:00</option>
+                    <option value=13>13:00</option>
+                    <option value=14>14:00</option>
+                    <option value=15>15:00</option>
+                    <option value=16>16:00</option>
+                    <option value=17>17:00</option>
+                    <option value=18>18:00</option>
+                    <option value=19>19:00</option>
+                    <option value=20>20:00</option>
                   </select>
                 </fieldset>
               </div>
@@ -132,7 +129,7 @@
                   </select>
                 </fieldset>
               </div>
-              <div class="col-lg-3 align-self-center target">
+              <!-- <div class="col-lg-3 align-self-center target">
                 <fieldset style="text-align:left;">
 
                   <br>
@@ -146,12 +143,12 @@
                     <option value="0">否</option>
                   </select>
                 </fieldset>
-              </div>
+              </div> -->
               <div class="col-lg-3 align-self-center target">
                 <fieldset style="text-align:left;" id="bar_div">
 
                   <br>
-                  <label style="font-weight:bold;">是否前往酒吧</label>
+                  <label style="font-weight:bold;">餐後前往酒吧 To the bar</label>
                   <br>
                   <br>
                   <select name="bar" class="form-select" aria-label="Default select example" id="chooseCategory"
@@ -370,6 +367,14 @@
         // }
       }
     }
+    const form = document.getElementById('search-form');
+  form.addEventListener('submit', (event) => {
+    const checked = [...form.elements.food].some((checkbox) => checkbox.checked);
+    if (!checked) {
+      event.preventDefault();
+      alert('請至少選擇一種類型的餐廳');
+    }
+  });
   </script>
   <!-- Scripts -->
   {% block scripts %}

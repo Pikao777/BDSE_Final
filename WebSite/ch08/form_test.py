@@ -114,6 +114,7 @@ def map():
 
     # 隨機取樣一行
     attraction_2 = df_a2.sample(n=1, weights=df_a2['weights'])
+    df_a2 = df_a2.drop(attraction_2.index)
     # result = pd.concat([result, attraction_2])
 
     d_latitude = (attraction_1['latitude'].values -
@@ -177,6 +178,7 @@ def map():
             filt_r_2_3 = (df_r['new_place_category'].isin(category_list_new)) & (df_r['district_num'] == int(
                 selected_district)) & (attraction_2['latitude'].values[0] > df_r['latitude']) & (df_r[11] == 1)
             restaurant_2 = place_filter(df_r, filt_r_2, filt_r_2_2, filt_r_2_3)
+            df_r = df_r.drop(restaurant_2.index)
 
             # 景點3要篩選latitude < attraction_2的latitude
             if '咖啡甜點' in category_list:
@@ -225,6 +227,7 @@ def map():
             filt_r_2_3 = (df_r['new_place_category'].isin(category_list_new)) & (df_r['district_num'] == int(
                 selected_district)) & (attraction_2['latitude'].values[0] < df_r['latitude']) & (df_r[11] == 1)
             restaurant_2 = place_filter(df_r, filt_r_2, filt_r_2_2, filt_r_2_3)
+            df_r = df_r.drop(restaurant_2.index)
 
             # 景點3要篩選latitude > attraction_2的latitude
             if '咖啡甜點' in category_list:
@@ -274,6 +277,7 @@ def map():
             filt_r_2_3 = (df_r['new_place_category'].isin(category_list_new)) & (df_r['district_num'] == int(
                 selected_district)) & (attraction_2['longitude'].values[0] > df_r['longitude']) & (df_r[11] == 1)
             restaurant_2 = place_filter(df_r, filt_r_2, filt_r_2_2, filt_r_2_3)
+            df_r = df_r.drop(restaurant_2.index)
 
             # 景點3要篩選longitude < attraction_2的longitude
             if '咖啡甜點' in category_list:
@@ -321,6 +325,7 @@ def map():
             filt_r_2_3 = (df_r['new_place_category'].isin(category_list_new)) & (df_r['district_num'] == int(
                 selected_district)) & (attraction_2['longitude'].values[0] < df_r['longitude']) & (df_r[11] == 1)
             restaurant_2 = place_filter(df_r, filt_r_2, filt_r_2_2, filt_r_2_3)
+            df_r = df_r.drop(restaurant_2.index)
 
             # 景點3要篩選longitude > attraction_2的longitude
             if '咖啡甜點' in category_list:
@@ -375,6 +380,39 @@ def map():
     df = pd.concat([df, restaurant_4])
     df = pd.concat([df, restaurant_attraction_5])
 
+    start = int(request.form.get('start_time'))
+    end = int(request.form.get('end_time'))
+    if start >= 20:
+        start_1 = 6
+    elif start >= 18:
+        start_1 = 5
+    elif start >= 16:
+        start_1 = 4
+    elif start >= 14:
+        start_1 = 3
+    elif start >= 12:
+        start_1 = 2
+    elif start >= 10:
+        start_1 = 1
+    else:
+        start_1 = 0
+
+    if end >= 20:
+        end_1 = 7
+    elif end >= 18:
+        end_1 = 6
+    elif end >= 16:
+        end_1 = 5
+    elif end >= 14:
+        end_1 = 4
+    elif end >= 12:
+        end_1 = 3
+    elif end >= 10:
+        end_1 = 2
+    else:
+        end_1 = 1
+    
+    df = df[start_1:end_1]
     # 最後合併完 reset index
     df = df.reset_index(drop=True)
 
